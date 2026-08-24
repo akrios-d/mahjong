@@ -121,13 +121,12 @@ html, body {
 }
 .board-chain {
   display: flex;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
   gap: 2px;
-  min-width: min-content;
-  width: max-content;
-  margin: 0 auto;
+  row-gap: 6px;
+  max-width: 100%;
 }
 .morto { font-size: 0.75rem; opacity: 0.6; }
 .hand-end-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -160,15 +159,15 @@ html, body {
 }
 .domino-tile.static { cursor: default; }
 .domino-tile .half {
-  width: 24px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   padding: 3px;
   gap: 1px;
 }
-.board-chain .domino-tile .half { width: 16px; height: 24px; padding: 2px; }
+.board-chain .domino-tile .half { width: 22px; height: 22px; padding: 2px; }
 .board-chain .domino-tile { flex-shrink: 0; }
 .domino-tile .divider { width: 2px; background: #8a7343; }
 .domino-tile .dot { border-radius: 50%; box-shadow: inset 0 1px 1px rgba(0,0,0,0.3); }
@@ -220,14 +219,52 @@ html, body {
   .you { order: 5; width: 100%; }
   .hand-back .card-back { width: 20px; height: 34px; }
   .hand-back.vertical .card-back { width: 26px; height: 18px; }
-  .domino-tile .half { width: 18px; height: 28px; padding: 2px; }
-  .board-chain .domino-tile .half { width: 13px; height: 20px; padding: 1px; }
+  .domino-tile .half { width: 24px; height: 24px; padding: 2px; }
+  .board-chain .domino-tile .half { width: 17px; height: 17px; padding: 1px; }
   .board-felt { padding: 10px 6px; border-radius: 10px; }
   .hand { gap: 4px; }
 }
 @media (max-width: 420px) {
-  .domino-tile .half { width: 15px; height: 24px; padding: 2px; }
-  .board-chain .domino-tile .half { width: 11px; height: 17px; padding: 1px; }
+  .domino-tile .half { width: 20px; height: 20px; padding: 2px; }
+  .board-chain .domino-tile .half { width: 15px; height: 15px; padding: 1px; }
+}
+
+/* Phones held sideways: height is the tight dimension, not width, so this
+   triggers regardless of the max-width breakpoints above and applies the
+   same compact stacked layout, just tightened further to fit the shallow
+   viewport without forcing a scroll. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .topbar { padding: 6px 14px; gap: 10px; }
+  .topbar h1 { font-size: 0.95rem; }
+  .room-bar { padding: 6px 0 0; gap: 4px; }
+  .seats-bar { font-size: 0.7rem; gap: 6px; }
+  .seats-bar .seat-chip { padding: 2px 8px; }
+  .scoreboard { font-size: 0.75rem; gap: 10px; }
+  .table {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: auto;
+    padding: 6px 10px 12px;
+    gap: 4px;
+  }
+  .side.top { order: 1; width: 100%; }
+  .side.top .name { font-size: 0.8rem; margin-bottom: 0; }
+  .side.left { order: 2; width: calc(50% - 5px); }
+  .side.right { order: 3; width: calc(50% - 5px); }
+  .board-area { order: 4; width: 100%; min-height: auto; padding: 2px 0; gap: 3px; }
+  .you { order: 5; width: 100%; gap: 3px; }
+  .you .name { display: none; }
+  .hand-back .card-back { width: 16px; height: 26px; }
+  .hand-back.vertical { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  .hand-back.vertical .card-back { width: 14px; height: 20px; }
+  .domino-tile .half { width: 16px; height: 16px; padding: 1px; }
+  .board-chain .domino-tile .half { width: 12px; height: 12px; padding: 1px; }
+  .board-felt { padding: 4px; }
+  .morto, .message, .last-batida { font-size: 0.7rem; min-height: 1em; margin: 0; }
+  .hand { gap: 3px; min-height: 44px; }
+  .controls { gap: 6px; }
+  .controls button { padding: 5px 12px; font-size: 0.8rem; }
+  .lobby-box { max-height: 92vh; overflow-y: auto; padding: 14px 20px; }
 }
 
 @media (max-width: 480px) {

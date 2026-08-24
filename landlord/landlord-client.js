@@ -75,6 +75,12 @@ els.findRoomsBtn.addEventListener("click", () => {
   }, () => { els.roomList.textContent = I18N.t("common.lobby.searchFailed"); });
 });
 
+if (!ServerConfig.get()) {
+  els.connectBtn.disabled = true;
+  els.findRoomsBtn.disabled = true;
+  setLobbyError(I18N.t("common.lobby.notConfigured"));
+}
+
 I18N.applyStaticI18n();
 I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });
 

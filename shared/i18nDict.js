@@ -116,6 +116,13 @@
     "common.lobby.searching": { "pt-BR": "Procurando salas...", en: "Searching for rooms...", zh: "正在查找房间……", fr: "Recherche de salles...", es: "Buscando salas..." },
     "common.lobby.noRooms": { "pt-BR": "Nenhuma sala aberta encontrada.", en: "No open rooms found.", zh: "未找到开放的房间。", fr: "Aucune salle ouverte trouvée.", es: "No se encontraron salas abiertas." },
     "common.lobby.searchFailed": { "pt-BR": "Não foi possível buscar salas (verifique o servidor).", en: "Couldn't search for rooms (check the server).", zh: "无法查找房间（请检查服务器）。", fr: "Impossible de rechercher des salles (vérifiez le serveur).", es: "No se pudieron buscar salas (verifica el servidor)." },
+    "common.lobby.notConfigured": {
+      "pt-BR": "Nenhum servidor configurado. Volte à página inicial para configurar um e jogar online.",
+      en: "No server configured. Go back to the home page to set one up and play online.",
+      zh: "尚未配置服务器。请返回首页配置服务器以进行在线游戏。",
+      fr: "Aucun serveur configuré. Retournez à la page d'accueil pour en configurer un et jouer en ligne.",
+      es: "Ningún servidor configurado. Vuelve a la página principal para configurar uno y jugar en línea.",
+    },
     "common.lobby.roomChip": { "pt-BR": "{code} ({used}/{total})", en: "{code} ({used}/{total})", zh: "{code}（{used}/{total}）", fr: "{code} ({used}/{total})", es: "{code} ({used}/{total})" },
     "common.lobby.connecting": { "pt-BR": "Conectando...", en: "Connecting...", zh: "正在连接……", fr: "Connexion...", es: "Conectando..." },
     "common.lobby.invalidAddress": { "pt-BR": "Endereço inválido: {error}", en: "Invalid address: {error}", zh: "地址无效：{error}", fr: "Adresse invalide : {error}", es: "Dirección inválida: {error}" },

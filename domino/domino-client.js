@@ -84,6 +84,12 @@ els.findRoomsBtn.addEventListener("click", () => {
   }, () => { els.roomList.textContent = I18N.t("common.lobby.searchFailed"); });
 });
 
+if (!ServerConfig.get()) {
+  els.connectBtn.disabled = true;
+  els.findRoomsBtn.disabled = true;
+  setLobbyError(I18N.t("common.lobby.notConfigured"));
+}
+
 I18N.applyStaticI18n();
 I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });
 
@@ -214,6 +220,44 @@ function renderTile(tile, opts) {
   return el;
 }
 
+// Renders the board as a snaking (boustrophedon) chain, like a real domino
+// table: fills a row left-to-right, then wraps to a new row that continues
+// right-to-left from where the previous one ended, instead of one long
+// horizontally-scrolling line or rows that all restart on the left.
+function renderBoardChain(chain) {
+  els.boardChain.innerHTML = "";
+  if (chain.length === 0) {
+    const hintEl = document.createElement("span");
+    hintEl.style.opacity = "0.5";
+    hintEl.textContent = I18N.t("domino.board.empty");
+    els.boardChain.appendChild(hintEl);
+    return;
+  }
+
+  // Measure real tile width (varies by breakpoint) by rendering the first
+  // tile into the live container, then decide how many fit per row.
+  const probeRow = document.createElement("div");
+  probeRow.className = "board-row";
+  const probeTile = renderTile(chain[0], { static: true });
+  probeRow.appendChild(probeTile);
+  els.boardChain.appendChild(probeRow);
+  const tileWidth = probeTile.offsetWidth || 40;
+  const gap = 4;
+  const containerWidth = els.boardChain.parentElement.clientWidth || 300;
+  const perRow = Math.max(1, Math.floor((containerWidth + gap) / (tileWidth + gap)));
+  els.boardChain.innerHTML = "";
+
+  for (let i = 0; i < chain.length; i += perRow) {
+    let rowTiles = chain.slice(i, i + perRow);
+    const rowIndex = i / perRow;
+    if (rowIndex % 2 === 1) rowTiles = [...rowTiles].reverse();
+    const rowEl = document.createElement("div");
+    rowEl.className = "board-row";
+    rowTiles.forEach((t) => rowEl.appendChild(renderTile(t, { static: true })));
+    els.boardChain.appendChild(rowEl);
+  }
+}
+
 /* ---------------- rendering ---------------- */
 function seatLabel(i) {
   if (i === mySeat) return I18N.t("common.you");
@@ -246,15 +290,7 @@ function render() {
 
   els.mortoInfo.textContent = I18N.t("domino.mortoInfo", { n: latest.mortoCount });
 
-  els.boardChain.innerHTML = "";
-  if (latest.board.chain.length === 0) {
-    const hintEl = document.createElement("span");
-    hintEl.style.opacity = "0.5";
-    hintEl.textContent = I18N.t("domino.board.empty");
-    els.boardChain.appendChild(hintEl);
-  } else {
-    for (const t of latest.board.chain) els.boardChain.appendChild(renderTile(t, { static: true }));
-  }
+  renderBoardChain(latest.board.chain);
 
   els.lastBatida.textContent = latest.lastBatida
     ? I18N.t("domino.lastHand", { label: I18N.t("domino.batida." + latest.lastBatida.type), points: latest.lastBatida.points })

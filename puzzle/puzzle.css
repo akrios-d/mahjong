@@ -77,3 +77,10 @@ html, body {
 .overlay.hidden { display: none; }
 .overlay-box { background: #1a2410; border: 1px solid #4d7332; border-radius: 14px; padding: 30px 36px; text-align: center; }
 .overlay-box button { margin-top: 16px; background: #a8e06c; color: #14200a; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+
+@media (max-width: 480px) {
+  .topbar { flex-wrap: wrap; row-gap: 6px; padding: 10px 14px; }
+  .topbar h1 { font-size: 0.95rem; }
+  .lang-bar { margin-left: auto; }
+  .phase { flex-basis: 100%; margin-left: 0; text-align: right; }
+}

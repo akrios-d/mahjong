@@ -171,3 +171,10 @@ html, body {
 @media (max-width: 420px) {
   .mtile { width: 28px; height: 40px; font-size: 18px; }
 }
+
+@media (max-width: 480px) {
+  .topbar { flex-wrap: wrap; row-gap: 6px; padding: 10px 14px; }
+  .topbar h1 { font-size: 0.95rem; }
+  .lang-bar { margin-left: auto; }
+  .phase { flex-basis: 100%; margin-left: 0; text-align: right; }
+}

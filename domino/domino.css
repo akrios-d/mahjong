@@ -156,7 +156,7 @@ html, body {
 .last-batida { font-size: 0.8rem; color: #6fd6ff; min-height: 1.2em; text-align: center; }
 
 .you { grid-area: you; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.hand { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; min-height: 70px; perspective: 900px; }
+.hand { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 70px; perspective: 900px; }
 
 .domino-tile {
   display: flex;

@@ -16,17 +16,10 @@
     <div class="lang-bar" id="langBar"></div>
     <h1>雀韵 &nbsp;·&nbsp; 地主</h1>
     <p class="sub" data-i18n="landing.subtitle">Seis jogos, recriados do zero — online, com IA e instaláveis como app (PWA).</p>
-    <div class="player-name-bar">
-      <label for="playerNameInput" data-i18n="landing.playerName.label">Seu nome (usado em todos os jogos)</label>
-      <input id="playerNameInput" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
-      <label for="serverUrlInput" data-i18n="landing.serverUrl.label">Endereço do servidor (usado em todos os jogos)</label>
-      <div class="server-url-row">
-        <input id="serverUrlInput" type="text" placeholder="ws://localhost:8787">
-        <button id="testServerBtn" type="button" data-i18n="landing.serverUrl.test">Testar servidor</button>
-        <button id="saveServerBtn" type="button" disabled data-i18n="landing.serverUrl.save">Salvar</button>
-      </div>
-      <p id="serverTestStatus" class="server-test-status"></p>
-    </div>
+    <button id="openSettingsBtn" type="button" class="settings-btn">
+      <span aria-hidden="true">⚙️</span>
+      <span data-i18n="landing.settings.button">Nome e servidor</span>
+    </button>
     <div class="games">
       <a class="game-card" href="mahjong/index.html">
         <span class="glyph">🀄</span>
@@ -66,6 +59,24 @@
       <span data-i18n="landing.serverNote.after">para rodar o servidor localmente ou publicá-lo (ex.: Render). Mahjong, Landlord e Dominó também têm um modo "sozinho contra IA" que roda 100% no navegador, sem precisar do servidor.</span>
     </p>
   </div>
+
+  <div id="settingsModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <button id="closeSettingsBtn" type="button" class="modal-close" aria-label="Fechar">✕</button>
+      <h2 data-i18n="landing.settings.title">Nome e servidor</h2>
+      <label for="playerNameInput" data-i18n="landing.playerName.label">Seu nome (usado em todos os jogos)</label>
+      <input id="playerNameInput" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
+      <label for="serverUrlInput" data-i18n="landing.serverUrl.label">Endereço do servidor (usado em todos os jogos)</label>
+      <div class="server-url-row">
+        <input id="serverUrlInput" type="text" placeholder="ws://localhost:8787">
+      </div>
+      <div class="server-url-actions">
+        <button id="testServerBtn" type="button" data-i18n="landing.serverUrl.test">Testar servidor</button>
+        <button id="saveServerBtn" type="button" disabled data-i18n="landing.serverUrl.save">Salvar</button>
+      </div>
+      <p id="serverTestStatus" class="server-test-status"></p>
+    </div>
+  </div>
   <script src="shared/i18n.js"></script>
   <script src="shared/i18nDict.js"></script>
   <script src="shared/playerName.js"></script>
@@ -73,6 +84,12 @@
   <script>
     I18N.applyStaticI18n();
     I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => I18N.applyStaticI18n());
+
+    const settingsModal = document.getElementById("settingsModal");
+    document.getElementById("openSettingsBtn").addEventListener("click", () => settingsModal.classList.remove("hidden"));
+    document.getElementById("closeSettingsBtn").addEventListener("click", () => settingsModal.classList.add("hidden"));
+    settingsModal.addEventListener("click", (e) => { if (e.target === settingsModal) settingsModal.classList.add("hidden"); });
+
     const playerNameInput = document.getElementById("playerNameInput");
     playerNameInput.value = PlayerName.get();
     playerNameInput.addEventListener("input", () => PlayerName.set(playerNameInput.value));

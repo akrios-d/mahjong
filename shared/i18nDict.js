@@ -31,6 +31,20 @@
       fr: "Nécessite un serveur configuré et accessible.",
       es: "Necesita un servidor configurado y accesible.",
     },
+    "landing.settings.button": {
+      "pt-BR": "Nome e servidor",
+      en: "Name and server",
+      zh: "姓名与服务器",
+      fr: "Nom et serveur",
+      es: "Nombre y servidor",
+    },
+    "landing.settings.title": {
+      "pt-BR": "Nome e servidor",
+      en: "Name and server",
+      zh: "姓名与服务器",
+      fr: "Nom et serveur",
+      es: "Nombre y servidor",
+    },
     "landing.serverUrl.label": {
       "pt-BR": "Endereço do servidor (usado em todos os jogos)",
       en: "Server address (used in every game)",

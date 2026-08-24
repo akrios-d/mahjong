@@ -442,11 +442,19 @@ function renderHandEndPanel() {
   // team is entirely AI-controlled (e.g. you're on the losing side),
   // nobody else would ever send it and the game would hang forever
   // waiting for a human on the winning team who isn't there.
+  //
+  // Deferred to a fresh tick: in local mode, send() calls straight into
+  // the engine, which deals the next hand and calls hooks.update()
+  // synchronously — re-entering render() while this very call is still
+  // executing. The outer call would then resume afterward and finish
+  // painting the DOM from its now-stale snapshot of `latest`, stomping
+  // the correct new-hand render that just ran. Breaking the call chain
+  // lets this render() finish first.
   if (p.needsTeamPick && p.agreedStarter != null) {
     const key = p.teammates.join(",") + ":" + p.agreedStarter;
     if (autoAdvancedFor !== key) {
       autoAdvancedFor = key;
-      send({ type: "newHand" });
+      setTimeout(() => send({ type: "newHand" }), 0);
     }
   }
 

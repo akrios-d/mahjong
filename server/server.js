@@ -18,10 +18,11 @@ const LE = require(path.join(__dirname, "..", "shared", "landlordEngine.js"));
 const DE = require(path.join(__dirname, "..", "shared", "dominoEngine.js"));
 const AE = require(path.join(__dirname, "..", "shared", "adedonhaEngine.js"));
 const DsE = require(path.join(__dirname, "..", "shared", "desenhoEngine.js"));
+const MJE = require(path.join(__dirname, "..", "shared", "mahjongEngine.js"));
 
 const PORT = process.env.PORT || 8787;
-const SEATS = { landlord: 3, domino: 4, adedonha: 8, desenho: 8 };
-const ENGINES = { landlord: LE, domino: DE, adedonha: AE, desenho: DsE };
+const SEATS = { landlord: 3, domino: 4, adedonha: 8, desenho: 8, mahjong: 4 };
+const ENGINES = { landlord: LE, domino: DE, adedonha: AE, desenho: DsE, mahjong: MJE };
 const GAMES = Object.keys(SEATS);
 
 const rooms = new Map(); // key `${game}:${code}` -> Room
@@ -139,6 +140,12 @@ wss.on("connection", (ws) => {
     } else if (room.game === "desenho") {
       if (msg.type === "startRound") result = engine.startRound(room);
       else if (msg.type === "guess") result = engine.submitGuess(room, seatIdx, msg.text);
+    } else if (room.game === "mahjong") {
+      if (msg.type === "chooseMissingSuit") result = engine.submitMissingSuit(room, seatIdx, msg.suit);
+      else if (msg.type === "discard") result = engine.submitDiscard(room, seatIdx, msg.uid);
+      else if (msg.type === "selfKong") result = engine.submitSelfKong(room, seatIdx);
+      else if (msg.type === "selfHu") result = engine.submitSelfHu(room, seatIdx);
+      else if (msg.type === "claimResponse") result = engine.submitClaimResponse(room, seatIdx, msg.action, msg.chiOption);
     }
     if (result && !result.ok) send(ws, { type: "error", message: result.error });
   });

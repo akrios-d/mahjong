@@ -1,12 +1,16 @@
 # Jogos de Mesa Online — Mahjong, Landlord, Dominó, Adedonha & Desenho
 
-Cinco implementações originais, em HTML/CSS/JS puro no front-end (sem build,
+Seis implementações originais, em HTML/CSS/JS puro no front-end (sem build,
 sem frameworks) mais um servidor Node/WebSocket para o multiplayer, dos
 jogos clássicos chineses/brasileiros/de festa que aparecem em
 *Where Winds Meet* (ou combinam com o clima):
 
+- **Mahjong** (estilo Sichuan, igual ao mini-game do Where Winds Meet) —
+  multiplayer online, 4 jogadores, 108 peças, Missing Suit, Pong/Kong/Chi/Hu,
+  **ou** sozinho contra IA sem precisar de servidor.
 - **Mahjong Solitaire** (Turtle) — single-player: combine pares de peças
-  livres até limpar o tabuleiro.
+  livres até limpar o tabuleiro. (Um jogo bem diferente do Mahjong acima —
+  ficou como bônus da primeira versão do projeto.)
 - **Landlord / Dou Dizhu (斗地主)** — multiplayer online (até 3 jogadores
   reais por sala) **ou** sozinho contra IA sem precisar de servidor.
 - **Dominó em Duplas** — multiplayer online (até 4 jogadores reais por sala,
@@ -29,11 +33,12 @@ tradicionais chineses e brasileiros, que são de domínio público.
 
 ## Rodando localmente
 
-O Mahjong Solitaire e os modos **"sozinho contra IA"** do Landlord/Dominó
-não precisam de servidor — é só abrir o `index.html` do jogo no navegador.
+O Mahjong Solitaire e os modos **"sozinho contra IA"** do Mahjong/Landlord/
+Dominó não precisam de servidor — é só abrir o `index.html` do jogo no
+navegador.
 
-Landlord, Dominó, Adedonha e Desenho (multiplayer online) precisam do
-servidor WebSocket rodando (ele guarda o estado das mesas e comanda a IA):
+Mahjong, Landlord, Dominó, Adedonha e Desenho (multiplayer online) precisam
+do servidor WebSocket rodando (ele guarda o estado das mesas e comanda a IA):
 
 ```bash
 cd server
@@ -44,9 +49,9 @@ npm start        # sobe em ws://localhost:8787 (ou $PORT, se definido)
 Depois abra o `index.html` do jogo — o endereço do servidor já vem
 pré-preenchido como `ws://localhost:8787`. Cada pessoa que quiser jogar
 entra com o mesmo código de sala; quem estiver na sala pode clicar em
-**"Começar com IA"** (Landlord/Dominó/Adedonha) para preencher as cadeiras
-vazias com bots, ou **"Começar só com quem entrou"** (Adedonha/Desenho)
-para travar a sala só com quem já está presente.
+**"Começar com IA"** (Mahjong/Landlord/Dominó/Adedonha) para preencher as
+cadeiras vazias com bots, ou **"Começar só com quem entrou"**
+(Adedonha/Desenho) para travar a sala só com quem já está presente.
 
 > Se alguém desconectar no meio da partida, a IA assume o assento
 > automaticamente (exceto no Desenho, que não tem bots — o assento só
@@ -70,6 +75,41 @@ WebSocket — Render inclusive:
 O front-end (`index.html` e as pastas de cada jogo) pode ficar em qualquer
 hospedagem estática (GitHub Pages, Render Static Site, etc.) — ele só
 precisa saber o endereço do WebSocket do servidor.
+
+## Regras do Mahjong adotadas
+
+Baseado nas regras reais do mini-game de Mahjong do *Where Winds Meet*
+(estilo Sichuan / "Bloody Mahjong"):
+
+- 108 peças: só os 3 naipes numéricos (Bambu, Bolinha, Caractere) de 1 a 9,
+  4 cópias cada — **sem** ventos, dragões ou flores.
+- 4 jogadores, 13 peças cada de início.
+- **Missing Suit**: depois de ver sua mão, cada jogador escolhe em segredo
+  um dos 3 naipes para abandonar. Sua mão final só pode usar os outros 2
+  naipes — você não pode fechar (Hu) enquanto tiver alguma peça do naipe
+  escolhido.
+- Turno: compra 1 peça (fica com 14) → pode declarar Kong oculto ou Hu
+  própria (zimo) → descarta (volta pra 13 soltas + grupos revelados).
+- Quando alguém descarta, os outros jogadores podem reagir: **Hu** (fechar
+  com essa peça) > **Kong** (4 iguais) > **Pong** (3 iguais) > **Chi**
+  (sequência de 3, só quem está à direita de quem descartou). Prioridade
+  nessa ordem; empates resolvidos por proximidade de quem descartou.
+- Vitória: 4 grupos (trinca/sequência/quadra) + 1 par, usando no máximo 2
+  dos 3 naipes.
+- Sem pontuação por Fan/multiplicadores — a primeira mão fechada
+  simplesmente vence a rodada. Se o monte acabar sem ninguém fechar, a
+  rodada termina sem vencedor.
+
+**Simplificações assumidas** (o doc original menciona variações e a IA
+precisa de regras fixas para jogar):
+- Chi está sempre habilitado.
+- Sem "kong roubado" (ganhar a peça de um Kong adicional de outro jogador)
+  nem "kong adicionado" (promover um Pong existente pra Kong puxando a 4ª
+  peça comprada) — só Kong oculto (na sua vez, com 4 na mão) e Kong aberto
+  reclamando um descarte (com 3 na mão).
+- A IA nunca reclama Chi (só Hu/Kong/Pong), e não faz Pong toda vez que
+  pode — o próprio jogo real avisa que Pong automático costuma ser um erro
+  estratégico, então a IA só faz isso ~40% das vezes que é elegível.
 
 ## Regras do Dominó adotadas
 
@@ -117,6 +157,8 @@ ajuste.
 - Landlord não implementa avião (trincas consecutivas) nem sequências de
   pares — só single, par, trinca, trinca+1, trinca+par, sequência, bomba
   e rocket.
+- Mahjong não tem pontuação por Fan/multiplicadores, nem kong
+  roubado/adicionado (veja "Regras do Mahjong adotadas" acima).
 - Adedonha não valida se a palavra realmente existe/pertence à categoria
   (fica no sistema de honra, como no jogo físico) — só confere se começa
   com a letra sorteada e se é única entre as respostas.
@@ -131,14 +173,16 @@ manifest.json / sw.js / icons/   PWA (instalável, app shell offline)
 shared/
   pwa.js                        registra o service worker
   roomUtils.js                  helpers de sala/assento comuns a todos os jogos
-  landlordRules.js / landlordEngine.js     regras + orquestração do Landlord
+  mahjongRules.js / mahjongEngine.js        peças + orquestração do Mahjong (Sichuan)
+  landlordRules.js / landlordEngine.js      regras + orquestração do Landlord
   dominoRules.js / dominoEngine.js          regras + orquestração do Dominó
   adedonhaWords.js / adedonhaEngine.js      banco de palavras + orquestração da Adedonha
   desenhoWords.js / desenhoEngine.js        banco de palavras + orquestração do Desenho
 server/
   server.js                     servidor WebSocket (salas, estado autoritativo, IA)
   package.json
-mahjong/                        Mahjong Solitaire (single-player)
+mahjong/                        Mahjong estilo Where Winds Meet — online ou sozinho contra IA
+mahjong-solitaire/               Mahjong Solitaire (single-player, bônus)
 landlord/                       Landlord — online ou sozinho contra IA
 domino/                         Dominó em duplas — online ou sozinho contra IA
 adedonha/                       Adedonha — online (com bots)

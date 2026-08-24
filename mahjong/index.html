@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mahjong Solitaire</title>
+<title>Mahjong — Where Winds Meet</title>
 <link rel="stylesheet" href="mahjong.css">
 <link rel="manifest" href="../manifest.json">
 <link rel="icon" href="../icons/icon-192.png">
@@ -14,29 +14,99 @@
 <body>
   <header class="topbar">
     <a class="back" href="../index.html">&larr; voltar</a>
-    <h1>Mahjong Solitaire</h1>
-    <div class="stats">
-      <span>Pares restantes: <b id="pairsLeft">--</b></span>
-      <span>Movimentos: <b id="moves">0</b></span>
-      <span>Tempo: <b id="timer">00:00</b></span>
-    </div>
-    <div class="actions">
-      <button id="hintBtn">Dica</button>
-      <button id="shuffleBtn">Embaralhar restantes</button>
-      <button id="newBtn">Novo jogo</button>
-    </div>
+    <h1>Mahjong <span class="tag">online</span></h1>
+    <div id="phaseLabel" class="phase">--</div>
   </header>
 
-  <main id="board" class="board"></main>
-
-  <div id="winOverlay" class="overlay hidden">
-    <div class="overlay-box">
-      <h2 id="winTitle">Você limpou o tabuleiro! 🎉</h2>
-      <p id="winStats"></p>
-      <button id="playAgainBtn">Jogar de novo</button>
+  <div id="lobby" class="lobby">
+    <div class="lobby-box">
+      <h2>Entrar em uma sala</h2>
+      <label>Endereço do servidor
+        <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
+      </label>
+      <label>Código da sala
+        <input id="roomCode" type="text" placeholder="ex: MJ1" maxlength="12">
+      </label>
+      <label>Seu nome
+        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      </label>
+      <button id="connectBtn">Entrar online</button>
+      <button id="playLocalBtn" class="secondary">Jogar sozinho contra IA (sem servidor)</button>
+      <p class="hint">4 jogadores, 108 peças (Bambu, Bolinha, Caractere — sem
+        ventos/dragões). Cada um recebe 13 peças e escolhe um naipe para
+        abandonar (Missing Suit). Vença fechando 4 grupos + 1 par usando só
+        2 dos 3 naipes.</p>
+      <p id="lobbyError" class="lobby-error"></p>
     </div>
   </div>
 
-  <script src="mahjong.js"></script>
+  <div id="roomBar" class="room-bar hidden">
+    <div class="seats-bar" id="seatsBar"></div>
+    <button id="startBtn" class="start-btn hidden">Começar com IA</button>
+  </div>
+
+  <main id="table" class="table hidden">
+    <div class="side top" id="seatTop">
+      <div class="name" id="nameTop"></div>
+      <div class="meta" id="metaTop"></div>
+      <div class="revealed" id="revealedTop"></div>
+      <div class="hand-back" id="handTop"></div>
+    </div>
+    <div class="side left" id="seatLeft">
+      <div class="name" id="nameLeft"></div>
+      <div class="meta" id="metaLeft"></div>
+      <div class="revealed" id="revealedLeft"></div>
+      <div class="hand-back vertical" id="handLeft"></div>
+    </div>
+    <div class="side right" id="seatRight">
+      <div class="name" id="nameRight"></div>
+      <div class="meta" id="metaRight"></div>
+      <div class="revealed" id="revealedRight"></div>
+      <div class="hand-back vertical" id="handRight"></div>
+    </div>
+
+    <div class="board-area">
+      <div class="wall-count" id="wallCount"></div>
+      <div class="discard-pile" id="discardPile"></div>
+      <div id="missingSuitPanel" class="missing-suit-panel hidden">
+        <p>Escolha o naipe que você vai abandonar (Missing Suit):</p>
+        <div class="suit-buttons">
+          <button data-suit="bamboo">🎋 Bambu</button>
+          <button data-suit="dots">⚪ Bolinha</button>
+          <button data-suit="characters">字 Caractere</button>
+        </div>
+      </div>
+      <div id="claimPanel" class="claim-panel hidden">
+        <p id="claimPrompt"></p>
+        <div class="claim-buttons" id="claimButtons"></div>
+      </div>
+      <div id="messageBox" class="message"></div>
+    </div>
+
+    <div class="you">
+      <div class="name">Você <span class="meta" id="metaYou"></span></div>
+      <div class="revealed" id="revealedYou"></div>
+      <div class="hand" id="handYou"></div>
+      <div class="controls">
+        <button id="kongBtn" class="hidden">Kong oculto</button>
+        <button id="huBtn" class="hidden">Hu! (fechar mão)</button>
+        <button id="hintBtn">Sugerir descarte</button>
+        <button id="newHandBtn" class="hidden">Nova mão</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="endOverlay" class="overlay hidden">
+    <div class="overlay-box">
+      <h2 id="endTitle"></h2>
+      <p id="endStats"></p>
+      <button id="playAgainBtn">Nova mão</button>
+    </div>
+  </div>
+
+  <script src="../shared/mahjongRules.js"></script>
+  <script src="../shared/roomUtils.js"></script>
+  <script src="../shared/mahjongEngine.js"></script>
+  <script src="mahjong-client.js"></script>
 </body>
 </html>

@@ -136,14 +136,18 @@ function scoreBatida(board, winningSeat, endsBefore) {
   return { type, points, winningTeam: teamOf(winningSeat) };
 }
 
-// Called when the board is blocked (nobody can play) — decided by pip
-// count, so none of the tile-matching bonus types apply here.
+// Called when the board is blocked (nobody can play) — decided by each
+// player's own individual pip count (not the team total): whoever of the
+// 4 is holding the fewest points wins the point for their team. If two+
+// players tie for lowest, it's only a real empate (redeal) when they're
+// on different teams — a same-team tie still gives that team the point.
 function scoreBlocked(board, hands) {
-  const teamSum = [0, 0];
-  for (let seat = 0; seat < 4; seat++) teamSum[teamOf(seat)] += pipSum(hands[seat]);
-  if (teamSum[0] === teamSum[1]) return { type: "empate", points: 0, winningTeam: -1 };
-  const winningTeam = teamSum[0] < teamSum[1] ? 0 : 1;
-  return { type: "batida", points: 1, winningTeam };
+  const sums = hands.map(pipSum);
+  const minSum = Math.min(...sums);
+  const lowestSeats = sums.reduce((acc, sum, seat) => (sum === minSum ? [...acc, seat] : acc), []);
+  const teams = new Set(lowestSeats.map(teamOf));
+  if (teams.size > 1) return { type: "empate", points: 0, winningTeam: -1 };
+  return { type: "batida", points: 1, winningTeam: teamOf(lowestSeats[0]) };
 }
 
 const BATIDA_LABELS = {

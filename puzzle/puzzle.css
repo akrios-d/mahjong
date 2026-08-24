@@ -69,6 +69,7 @@ html, body {
 .progress-bar.hidden { display: none; }
 
 .canvas-wrap { width: 100%; max-width: 1000px; background: #1a2410; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+.canvas-wrap.hidden { display: none; }
 #canvas { display: block; width: 100%; height: auto; touch-action: none; }
 
 .message { min-height: 1.3em; color: #d7f0ae; font-size: 0.85rem; text-align: center; }

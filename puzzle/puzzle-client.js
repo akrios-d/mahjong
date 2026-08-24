@@ -43,6 +43,7 @@ const els = {
 
   progressBar: document.getElementById("progressBar"),
   progressLabel: document.getElementById("progressLabel"),
+  canvasWrap: document.getElementById("canvasWrap"),
   canvas: document.getElementById("canvas"),
   newPuzzleBtn: document.getElementById("newPuzzleBtn"),
 
@@ -228,9 +229,11 @@ function render() {
   if (showSetup && latest.hasImage) els.gridBox.classList.remove("hidden");
 
   els.newPuzzleBtn.classList.toggle("hidden", latest.phase === "setup");
-  els.progressBar.classList.toggle("hidden", latest.phase !== "playing" && latest.phase !== "solved");
+  const showBoard = latest.phase === "playing" || latest.phase === "solved";
+  els.progressBar.classList.toggle("hidden", !showBoard);
+  els.canvasWrap.classList.toggle("hidden", !showBoard);
 
-  if (latest.phase === "playing" || latest.phase === "solved") {
+  if (showBoard) {
     els.progressLabel.textContent = I18N.t("puzzle.progress", { locked: latest.lockedCount, total: latest.totalCount });
     resizeCanvasIfNeeded();
     drawBoard();

@@ -355,11 +355,21 @@ function formatLogEntry(entry) {
   return I18N.t(entry.key, p);
 }
 
+let autoAdvancedFor = null;
+
 function renderHandEndPanel() {
   const show = latest.phase === "handEnd" && latest.pendingHandEnd;
   els.handEndPanel.classList.toggle("hidden", !show);
   if (!show) return;
   const p = latest.pendingHandEnd;
+
+  if (p.needsTeamPick && p.agreedStarter != null && p.teammates.includes(mySeat)) {
+    const key = p.teammates.join(",") + ":" + p.agreedStarter;
+    if (autoAdvancedFor !== key) {
+      autoAdvancedFor = key;
+      send({ type: "newHand" });
+    }
+  }
 
   if (p.needsTeamPick && p.teammates.includes(mySeat)) {
     els.starterPickBox.classList.remove("hidden");

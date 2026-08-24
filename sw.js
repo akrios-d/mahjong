@@ -3,7 +3,7 @@
    Bump CACHE_NAME whenever the precache list changes so old caches get
    cleaned up. Multiplayer traffic (ws:// / wss://) is never intercepted —
    the fetch handler only sees http(s) requests. */
-const CACHE_NAME = "jogos-mesa-v9";
+const CACHE_NAME = "jogos-mesa-v10";
 const PRECACHE = [
   "./",
   "index.html",
@@ -16,6 +16,7 @@ const PRECACHE = [
   "shared/i18nDict.js",
   "shared/playerName.js",
   "shared/serverConfig.js",
+  "shared/roomSearch.js",
   "shared/roomUtils.js",
   "shared/landlordRules.js",
   "shared/landlordEngine.js",

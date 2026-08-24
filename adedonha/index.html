@@ -25,9 +25,11 @@
       <label><span data-i18n="common.lobby.roomCode">Código da sala</span>
         <input id="roomCode" type="text" data-i18n-placeholder="adedonha.lobby.roomCodePlaceholder" placeholder="ex: STOP1" maxlength="12">
       </label>
-      <label><span data-i18n="common.lobby.playerName">Seu nome</span>
-        <input id="playerName" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
-      </label>
+      <div class="room-search">
+        <button id="findRoomsBtn" type="button" data-i18n="common.lobby.findRooms">Buscar salas abertas</button>
+        <div id="roomList" class="room-list"></div>
+      </div>
+      <input id="playerName" type="hidden">
       <button id="connectBtn" data-i18n="common.lobby.connect">Entrar online</button>
       <button id="playLocalBtn" class="secondary" data-i18n="adedonha.lobby.playLocal">Jogar sozinho contra IA (sem servidor)</button>
       <p class="hint" data-i18n="adedonha.lobby.hint">Até 8 jogadores por sala. Todo mundo propõe categorias,
@@ -81,6 +83,7 @@
   <script src="../shared/i18nDict.js"></script>
   <script src="../shared/playerName.js"></script>
   <script src="../shared/serverConfig.js"></script>
+  <script src="../shared/roomSearch.js"></script>
   <script src="../shared/adedonhaWords.js"></script>
   <script src="../shared/roomUtils.js"></script>
   <script src="../shared/adedonhaEngine.js"></script>

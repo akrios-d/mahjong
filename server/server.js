@@ -58,6 +58,19 @@ function startRoom(room, fillAI) {
   ENGINES[room.game].deal(room);
 }
 
+function handleListRooms(ws, msg) {
+  const game = GAMES.includes(msg.game) ? msg.game : null;
+  if (!game) return;
+  const list = [];
+  for (const room of rooms.values()) {
+    if (room.game !== game || room.started) continue;
+    const seatsUsed = room.seats.filter((s) => s.ws || s.isAI).length;
+    if (seatsUsed === 0 || seatsUsed >= room.seats.length) continue; // hide empty/full rooms
+    list.push({ code: room.code, seatsUsed, seatsTotal: room.seats.length });
+  }
+  send(ws, { type: "roomList", game, rooms: list });
+}
+
 function handleJoin(ws, msg) {
   const game = GAMES.includes(msg.game) ? msg.game : "landlord";
   const code = String(msg.room || "SALA").trim().slice(0, 12) || "SALA";
@@ -110,6 +123,7 @@ wss.on("connection", (ws) => {
     let msg;
     try { msg = JSON.parse(raw); } catch { return; }
     if (msg.type === "join") return handleJoin(ws, msg);
+    if (msg.type === "listRooms") return handleListRooms(ws, msg);
 
     const room = ws.roomKey ? rooms.get(ws.roomKey) : null;
     if (!room) return send(ws, { type: "error", message: "Você não está em nenhuma sala." });

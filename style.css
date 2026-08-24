@@ -87,6 +87,19 @@ body {
   transform: translateY(-6px);
   border-color: var(--accent);
 }
+.game-card .needs-server-note { display: none; }
+.game-card.unavailable {
+  opacity: 0.4;
+  filter: grayscale(0.6);
+  pointer-events: none;
+}
+.game-card.unavailable .needs-server-note {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.72rem;
+  font-style: italic;
+  opacity: 0.9;
+}
 .game-card .glyph {
   font-size: 3rem;
   display: block;

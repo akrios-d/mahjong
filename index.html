@@ -43,10 +43,11 @@
         <h2>Adedonha <span class="badge" data-i18n="landing.badge.online">online</span></h2>
         <p data-i18n="landing.adedonha.desc">Proponha categorias, sorteie a letra e escreva palavras até alguém gritar "PARE!". Até 8 jogadores + bots.</p>
       </a>
-      <a class="game-card" href="desenho/index.html">
+      <a class="game-card" href="desenho/index.html" data-needs-server="true">
         <span class="glyph">🎨</span>
         <h2><span data-i18n="landing.desenho.title">Desenho &amp; Adivinha</span> <span class="badge" data-i18n="landing.badge.online">online</span></h2>
         <p data-i18n="landing.desenho.desc">Um jogador desenha, os outros adivinham no chat. Estilo Gartic/Pictionary — só entre pessoas reais.</p>
+        <p class="needs-server-note" data-i18n="landing.needsServer">Precisa de um servidor configurado e acessível.</p>
       </a>
       <a class="game-card" href="puzzle/index.html">
         <span class="glyph">🧩</span>
@@ -73,6 +74,32 @@
     const serverUrlInput = document.getElementById("serverUrlInput");
     serverUrlInput.value = ServerConfig.get() || ServerConfig.defaultUrl();
     serverUrlInput.addEventListener("input", () => ServerConfig.set(serverUrlInput.value));
+
+    // Only Desenho has zero offline mode (no bots — needs real people over
+    // the server), so it's the one card worth graying out when the
+    // configured server isn't reachable. The others still work via "sozinho
+    // contra IA" either way.
+    async function checkServerReachable(url) {
+      const httpUrl = url.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 1800);
+        await fetch(httpUrl, { mode: "no-cors", signal: controller.signal });
+        clearTimeout(timer);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+    checkServerReachable(serverUrlInput.value).then((ok) => {
+      if (ok) return;
+      document.querySelectorAll(".game-card[data-needs-server]").forEach((el) => el.classList.add("unavailable"));
+    });
+    serverUrlInput.addEventListener("change", () => {
+      checkServerReachable(serverUrlInput.value).then((ok) => {
+        document.querySelectorAll(".game-card[data-needs-server]").forEach((el) => el.classList.toggle("unavailable", !ok));
+      });
+    });
   </script>
 </body>
 </html>

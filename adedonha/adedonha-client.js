@@ -15,6 +15,8 @@ let answerDebounce = {};
 const els = {
   lobby: document.getElementById("lobby"),
   roomCode: document.getElementById("roomCode"),
+  findRoomsBtn: document.getElementById("findRoomsBtn"),
+  roomList: document.getElementById("roomList"),
   playerName: document.getElementById("playerName"),
   connectBtn: document.getElementById("connectBtn"),
   playLocalBtn: document.getElementById("playLocalBtn"),
@@ -56,6 +58,22 @@ function defaultServerUrl() {
 els.roomCode.value = "STOP1";
 els.playerName.value = PlayerName.get() || ("Jogador" + Math.floor(Math.random() * 900 + 100));
 els.playerName.addEventListener("input", () => PlayerName.set(els.playerName.value));
+
+els.findRoomsBtn.addEventListener("click", () => {
+  els.roomList.innerHTML = "";
+  els.roomList.textContent = I18N.t("common.lobby.searching");
+  RoomSearch.search("adedonha", (rms) => {
+    if (!rms.length) { els.roomList.textContent = I18N.t("common.lobby.noRooms"); return; }
+    els.roomList.innerHTML = "";
+    rms.forEach((r) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = I18N.t("common.lobby.roomChip", { code: r.code, used: r.seatsUsed, total: r.seatsTotal });
+      b.addEventListener("click", () => { els.roomCode.value = r.code; });
+      els.roomList.appendChild(b);
+    });
+  }, () => { els.roomList.textContent = I18N.t("common.lobby.searchFailed"); });
+});
 
 I18N.applyStaticI18n();
 I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });

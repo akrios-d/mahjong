@@ -311,3 +311,18 @@ html, body {
   .lang-bar { margin-left: auto; }
   .phase { flex-basis: 100%; margin-left: 0; text-align: right; }
 }
+
+.room-search { margin-top: -6px; margin-bottom: 12px; }
+.room-search #findRoomsBtn {
+  width: 100%; background: transparent; border: 1px dashed rgba(255,255,255,0.3);
+  color: inherit; opacity: 0.8; font-weight: normal; font-size: 0.8rem;
+  border-radius: 8px; padding: 7px; cursor: pointer; margin-top: 0;
+}
+.room-search #findRoomsBtn:hover { opacity: 1; }
+.room-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-size: 0.75rem; }
+.room-list button {
+  width: auto; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
+  color: inherit; border-radius: 20px; padding: 5px 12px; font-weight: normal;
+  font-size: 0.75rem; cursor: pointer; margin-top: 0;
+}
+.room-list button:hover { background: rgba(255,255,255,0.16); }

@@ -20,7 +20,12 @@
       <label for="playerNameInput" data-i18n="landing.playerName.label">Seu nome (usado em todos os jogos)</label>
       <input id="playerNameInput" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
       <label for="serverUrlInput" data-i18n="landing.serverUrl.label">Endereço do servidor (usado em todos os jogos)</label>
-      <input id="serverUrlInput" type="text" placeholder="ws://localhost:8787">
+      <div class="server-url-row">
+        <input id="serverUrlInput" type="text" placeholder="ws://localhost:8787">
+        <button id="testServerBtn" type="button" data-i18n="landing.serverUrl.test">Testar servidor</button>
+        <button id="saveServerBtn" type="button" disabled data-i18n="landing.serverUrl.save">Salvar</button>
+      </div>
+      <p id="serverTestStatus" class="server-test-status"></p>
     </div>
     <div class="games">
       <a class="game-card" href="mahjong/index.html">
@@ -72,14 +77,19 @@
     playerNameInput.value = PlayerName.get();
     playerNameInput.addEventListener("input", () => PlayerName.set(playerNameInput.value));
     const serverUrlInput = document.getElementById("serverUrlInput");
-    serverUrlInput.value = ServerConfig.get() || ServerConfig.defaultUrl();
-    serverUrlInput.addEventListener("input", () => ServerConfig.set(serverUrlInput.value));
+    const testServerBtn = document.getElementById("testServerBtn");
+    const saveServerBtn = document.getElementById("saveServerBtn");
+    const serverTestStatus = document.getElementById("serverTestStatus");
+    const savedServerUrl = ServerConfig.get();
+    serverUrlInput.value = savedServerUrl || ServerConfig.defaultUrl();
 
     // Only Desenho has zero offline mode (no bots — needs real people over
-    // the server), so it's the one card worth graying out when the
-    // configured server isn't reachable. The others still work via "sozinho
-    // contra IA" either way.
+    // the server), so it's the one card worth graying out when no server is
+    // configured/reachable. The others still work via "sozinho contra IA".
     async function checkServerReachable(url) {
+      let parsed;
+      try { parsed = new URL(url); } catch (e) { return false; }
+      if (parsed.protocol !== "ws:" && parsed.protocol !== "wss:") return false;
       const httpUrl = url.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
       try {
         const controller = new AbortController();
@@ -91,14 +101,48 @@
         return false;
       }
     }
-    checkServerReachable(serverUrlInput.value).then((ok) => {
-      if (ok) return;
-      document.querySelectorAll(".game-card[data-needs-server]").forEach((el) => el.classList.add("unavailable"));
+    function setNeedsServerCards(ok) {
+      document.querySelectorAll(".game-card[data-needs-server]").forEach((el) => el.classList.toggle("unavailable", !ok));
+    }
+    function setStatus(text, kind) {
+      serverTestStatus.textContent = text;
+      serverTestStatus.classList.remove("ok", "fail");
+      if (kind) serverTestStatus.classList.add(kind);
+    }
+
+    if (savedServerUrl) {
+      setStatus(I18N.t("landing.serverUrl.saved"), "ok");
+      checkServerReachable(savedServerUrl).then(setNeedsServerCards);
+    } else {
+      setNeedsServerCards(false);
+    }
+
+    serverUrlInput.addEventListener("input", () => {
+      saveServerBtn.disabled = true;
+      setStatus("", null);
     });
-    serverUrlInput.addEventListener("change", () => {
-      checkServerReachable(serverUrlInput.value).then((ok) => {
-        document.querySelectorAll(".game-card[data-needs-server]").forEach((el) => el.classList.toggle("unavailable", !ok));
-      });
+
+    testServerBtn.addEventListener("click", async () => {
+      const url = serverUrlInput.value.trim();
+      if (!url) return;
+      testServerBtn.disabled = true;
+      saveServerBtn.disabled = true;
+      setStatus(I18N.t("common.lobby.connecting"), null);
+      const ok = await checkServerReachable(url);
+      testServerBtn.disabled = false;
+      if (ok) {
+        setStatus(I18N.t("landing.serverUrl.testOk"), "ok");
+        saveServerBtn.disabled = false;
+      } else {
+        setStatus(I18N.t("landing.serverUrl.testFail"), "fail");
+      }
+    });
+
+    saveServerBtn.addEventListener("click", () => {
+      ServerConfig.set(serverUrlInput.value.trim());
+      saveServerBtn.disabled = true;
+      setStatus(I18N.t("landing.serverUrl.saved"), "ok");
+      setNeedsServerCards(true);
     });
   </script>
 </body>

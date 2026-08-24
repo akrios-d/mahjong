@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dominó em Duplas</title>
+<link rel="stylesheet" href="domino.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../index.html">&larr; voltar</a>
+    <h1>Dominó em Duplas <span class="tag">online</span></h1>
+    <div id="phaseLabel" class="phase">--</div>
+  </header>
+
+  <div id="lobby" class="lobby">
+    <div class="lobby-box">
+      <h2>Entrar em uma sala</h2>
+      <label>Endereço do servidor
+        <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
+      </label>
+      <label>Código da sala
+        <input id="roomCode" type="text" placeholder="ex: MESA1" maxlength="12">
+      </label>
+      <label>Seu nome
+        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      </label>
+      <button id="connectBtn">Entrar</button>
+      <p class="hint">4 assentos por sala, em duplas fixas: assentos 1+3 vs 2+4
+        (jogadores sentados de frente formam dupla). Partida até 6 pontos.
+        Quem entrar pode clicar em "Começar com IA" para preencher as
+        cadeiras vazias com bots e iniciar.</p>
+      <p id="lobbyError" class="lobby-error"></p>
+    </div>
+  </div>
+
+  <div id="roomBar" class="room-bar hidden">
+    <div class="seats-bar" id="seatsBar"></div>
+    <div class="scoreboard" id="scoreboard"></div>
+    <button id="startBtn" class="start-btn hidden">Começar com IA</button>
+  </div>
+
+  <main id="table" class="table hidden">
+    <div class="side top" id="seatTop">
+      <div class="name" id="nameTop"></div>
+      <div class="hand-back" id="handTop"></div>
+    </div>
+    <div class="side left" id="seatLeft">
+      <div class="name" id="nameLeft"></div>
+      <div class="hand-back vertical" id="handLeft"></div>
+    </div>
+    <div class="side right" id="seatRight">
+      <div class="name" id="nameRight"></div>
+      <div class="hand-back vertical" id="handRight"></div>
+    </div>
+
+    <div class="board-area">
+      <div class="board-chain" id="boardChain"></div>
+      <div class="morto" id="mortoInfo"></div>
+      <div id="messageBox" class="message"></div>
+      <div id="lastBatida" class="last-batida"></div>
+    </div>
+
+    <div class="you">
+      <div class="name">Você</div>
+      <div class="play-choice hidden" id="playChoice">
+        <span id="playChoiceLabel"></span>
+        <button id="playLeftBtn">Jogar à esquerda</button>
+        <button id="playRightBtn">Jogar à direita</button>
+        <button id="cancelSelectBtn">Cancelar</button>
+      </div>
+      <div class="hand" id="handYou"></div>
+      <div class="controls">
+        <button id="passBtn" disabled>Passar</button>
+        <button id="hintBtn">Sugerir</button>
+        <button id="newHandBtn" class="hidden">Próxima mão</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="../shared/dominoRules.js"></script>
+  <script src="domino-client.js"></script>
+</body>
+</html>

@@ -65,6 +65,23 @@ body {
   opacity: 0.85;
   line-height: 1.4;
 }
+.badge {
+  font-size: 0.55rem;
+  vertical-align: middle;
+  background: rgba(232,192,96,0.25);
+  color: var(--accent);
+  padding: 2px 7px;
+  border-radius: 10px;
+  margin-left: 4px;
+}
+.server-note {
+  margin-top: 1.6em;
+  font-size: 0.78rem;
+  opacity: 0.7;
+  max-width: 560px;
+  line-height: 1.5;
+}
+.server-note a { color: var(--accent); }
 footer.note {
   margin-top: 2.5em;
   font-size: 0.75rem;

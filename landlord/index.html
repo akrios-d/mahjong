@@ -3,25 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Landlord (斗地主)</title>
+<title>Landlord Online</title>
 <link rel="stylesheet" href="landlord.css">
 </head>
 <body>
   <header class="topbar">
     <a class="back" href="../index.html">&larr; voltar</a>
-    <h1>Landlord &middot; 斗地主</h1>
-    <div id="phaseLabel" class="phase">Distribuindo...</div>
+    <h1>Landlord &middot; 斗地主 <span class="tag">online</span></h1>
+    <div id="phaseLabel" class="phase">--</div>
   </header>
 
-  <main class="table">
+  <div id="lobby" class="lobby">
+    <div class="lobby-box">
+      <h2>Entrar em uma sala</h2>
+      <label>Endereço do servidor
+        <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
+      </label>
+      <label>Código da sala
+        <input id="roomCode" type="text" placeholder="ex: SALA1" maxlength="12">
+      </label>
+      <label>Seu nome
+        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      </label>
+      <button id="connectBtn">Entrar</button>
+      <p class="hint">3 assentos por sala. Quem entrar pode clicar em "Começar com IA"
+        para preencher as cadeiras vazias com bots e iniciar.</p>
+      <p id="lobbyError" class="lobby-error"></p>
+    </div>
+  </div>
+
+  <div id="roomBar" class="room-bar hidden">
+    <div class="seats-bar" id="seatsBar"></div>
+    <button id="startBtn" class="start-btn hidden">Começar com IA</button>
+  </div>
+
+  <main id="table" class="table hidden">
     <div class="opponent left">
-      <div class="name">Bot A</div>
+      <div class="name" id="nameA">Bot A</div>
       <div class="role" id="roleA"></div>
       <div class="hand-back" id="handA"></div>
       <div class="lastplay" id="lastA"></div>
     </div>
     <div class="opponent right">
-      <div class="name">Bot B</div>
+      <div class="name" id="nameB">Bot B</div>
       <div class="role" id="roleB"></div>
       <div class="hand-back" id="handB"></div>
       <div class="lastplay" id="lastB"></div>
@@ -46,22 +70,15 @@
       <div class="name">Você <span class="role" id="roleYou"></span></div>
       <div class="hand" id="handYou"></div>
       <div class="controls">
-        <button id="playBtn">Jogar</button>
-        <button id="passBtn">Passar</button>
+        <button id="playBtn" disabled>Jogar</button>
+        <button id="passBtn" disabled>Passar</button>
         <button id="hintBtn">Sugerir</button>
-        <button id="newBtn">Nova partida</button>
+        <button id="newBtn" class="hidden">Nova mão</button>
       </div>
     </div>
   </main>
 
-  <div id="endOverlay" class="overlay hidden">
-    <div class="overlay-box">
-      <h2 id="endTitle"></h2>
-      <p id="endStats"></p>
-      <button id="playAgainBtn">Jogar de novo</button>
-    </div>
-  </div>
-
-  <script src="landlord.js"></script>
+  <script src="../shared/landlordRules.js"></script>
+  <script src="landlord-client.js"></script>
 </body>
 </html>

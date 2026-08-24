@@ -10,11 +10,11 @@
   I18N.registerDict({
     /* ---------------- landing page ---------------- */
     "landing.subtitle": {
-      "pt-BR": "Seis jogos, recriados do zero — online, com IA e instaláveis como app (PWA).",
-      en: "Six games, recreated from scratch — online, with AI, and installable as an app (PWA).",
-      zh: "六款游戏，从零重制——支持联机、AI 对战，并可作为应用安装（PWA）。",
-      fr: "Six jeux, recréés de zéro — en ligne, avec IA, et installables comme application (PWA).",
-      es: "Seis juegos, recreados desde cero — en línea, con IA e instalables como app (PWA).",
+      "pt-BR": "Seis jogos, recriados do zero — online e com IA.",
+      en: "Six games, recreated from scratch — online and with AI.",
+      zh: "六款游戏，从零重制——支持联机与 AI 对战。",
+      fr: "Six jeux, recréés de zéro — en ligne et avec IA.",
+      es: "Seis juegos, recreados desde cero — en línea y con IA.",
     },
     "landing.badge.online": { "pt-BR": "online", en: "online", zh: "在线", fr: "en ligne", es: "en línea" },
     "landing.playerName.label": {
@@ -23,6 +23,13 @@
       zh: "你的名字（所有游戏通用）",
       fr: "Votre nom (utilisé dans tous les jeux)",
       es: "Tu nombre (usado en todos los juegos)",
+    },
+    "landing.serverUrl.label": {
+      "pt-BR": "Endereço do servidor (usado em todos os jogos)",
+      en: "Server address (used in every game)",
+      zh: "服务器地址（所有游戏通用）",
+      fr: "Adresse du serveur (utilisée dans tous les jeux)",
+      es: "Dirección del servidor (usada en todos los juegos)",
     },
     "landing.mahjong.desc": {
       "pt-BR": "O Mahjong de verdade (estilo Sichuan): 108 peças, 4 jogadores, escolha seu Missing Suit e feche com 4 grupos + 1 par. Pong, Kong, Chi e Hu.",

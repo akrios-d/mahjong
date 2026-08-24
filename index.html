@@ -19,6 +19,8 @@
     <div class="player-name-bar">
       <label for="playerNameInput" data-i18n="landing.playerName.label">Seu nome (usado em todos os jogos)</label>
       <input id="playerNameInput" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
+      <label for="serverUrlInput" data-i18n="landing.serverUrl.label">Endereço do servidor (usado em todos os jogos)</label>
+      <input id="serverUrlInput" type="text" placeholder="ws://localhost:8787">
     </div>
     <div class="games">
       <a class="game-card" href="mahjong/index.html">
@@ -61,12 +63,16 @@
   <script src="shared/i18n.js"></script>
   <script src="shared/i18nDict.js"></script>
   <script src="shared/playerName.js"></script>
+  <script src="shared/serverConfig.js"></script>
   <script>
     I18N.applyStaticI18n();
     I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => I18N.applyStaticI18n());
     const playerNameInput = document.getElementById("playerNameInput");
     playerNameInput.value = PlayerName.get();
     playerNameInput.addEventListener("input", () => PlayerName.set(playerNameInput.value));
+    const serverUrlInput = document.getElementById("serverUrlInput");
+    serverUrlInput.value = ServerConfig.get() || ServerConfig.defaultUrl();
+    serverUrlInput.addEventListener("input", () => ServerConfig.set(serverUrlInput.value));
   </script>
 </body>
 </html>

@@ -14,7 +14,6 @@ let selectedUids = new Set();
 
 const els = {
   lobby: document.getElementById("lobby"),
-  serverUrl: document.getElementById("serverUrl"),
   roomCode: document.getElementById("roomCode"),
   playerName: document.getElementById("playerName"),
   connectBtn: document.getElementById("connectBtn"),
@@ -54,7 +53,6 @@ function defaultServerUrl() {
   const proto = location.protocol === "https:" ? "wss:" : "ws:";
   return `${proto}//${location.hostname || "localhost"}:8787`;
 }
-els.serverUrl.value = defaultServerUrl();
 els.roomCode.value = "SALA1";
 els.playerName.value = PlayerName.get() || ("Jogador" + Math.floor(Math.random() * 900 + 100));
 els.playerName.addEventListener("input", () => PlayerName.set(els.playerName.value));
@@ -68,7 +66,7 @@ els.connectBtn.addEventListener("click", connect);
 els.playLocalBtn.addEventListener("click", playLocal);
 
 function connect() {
-  const url = els.serverUrl.value.trim() || defaultServerUrl();
+  const url = ServerConfig.get() || defaultServerUrl();
   const room = els.roomCode.value.trim() || "SALA1";
   const name = els.playerName.value.trim() || "Jogador";
   mode = "online";

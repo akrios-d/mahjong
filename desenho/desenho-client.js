@@ -13,7 +13,6 @@ let lastPoint = null;
 
 const els = {
   lobby: document.getElementById("lobby"),
-  serverUrl: document.getElementById("serverUrl"),
   roomCode: document.getElementById("roomCode"),
   playerName: document.getElementById("playerName"),
   connectBtn: document.getElementById("connectBtn"),
@@ -64,7 +63,6 @@ function defaultServerUrl() {
   const proto = location.protocol === "https:" ? "wss:" : "ws:";
   return `${proto}//${location.hostname || "localhost"}:8787`;
 }
-els.serverUrl.value = defaultServerUrl();
 els.roomCode.value = "DESENHO1";
 els.playerName.value = PlayerName.get() || ("Jogador" + Math.floor(Math.random() * 900 + 100));
 els.playerName.addEventListener("input", () => PlayerName.set(els.playerName.value));
@@ -79,7 +77,7 @@ function send(obj) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.st
 els.connectBtn.addEventListener("click", connect);
 
 function connect() {
-  const url = els.serverUrl.value.trim() || defaultServerUrl();
+  const url = ServerConfig.get() || defaultServerUrl();
   const room = els.roomCode.value.trim() || "DESENHO1";
   const name = els.playerName.value.trim() || "Jogador";
   setLobbyError(I18N.t("common.lobby.connecting"));

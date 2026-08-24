@@ -1,10 +1,14 @@
 "use strict";
 
 const LR = window.LandlordRules;
+const RU = window.RoomUtils;
+const LE = window.LandlordEngine;
 
 let ws = null;
+let mode = null; // "online" | "local"
+let localRoom = null;
 let mySeat = -1;
-let latest = null; // last state snapshot from server
+let latest = null; // last state snapshot (from server, or from the local engine)
 let selectedUids = new Set();
 
 const els = {
@@ -13,6 +17,7 @@ const els = {
   roomCode: document.getElementById("roomCode"),
   playerName: document.getElementById("playerName"),
   connectBtn: document.getElementById("connectBtn"),
+  playLocalBtn: document.getElementById("playLocalBtn"),
   lobbyError: document.getElementById("lobbyError"),
 
   roomBar: document.getElementById("roomBar"),
@@ -53,11 +58,13 @@ els.playerName.value = "Jogador" + Math.floor(Math.random() * 900 + 100);
 function setLobbyError(msg) { els.lobbyError.textContent = msg || ""; }
 
 els.connectBtn.addEventListener("click", connect);
+els.playLocalBtn.addEventListener("click", playLocal);
 
 function connect() {
   const url = els.serverUrl.value.trim() || defaultServerUrl();
   const room = els.roomCode.value.trim() || "SALA1";
   const name = els.playerName.value.trim() || "Jogador";
+  mode = "online";
   setLobbyError("Conectando...");
   try { ws = new WebSocket(url); } catch (e) { setLobbyError("Endereço inválido: " + e.message); return; }
 
@@ -70,9 +77,7 @@ function connect() {
     const msg = JSON.parse(ev.data);
     if (msg.type === "joined") {
       mySeat = msg.seatIdx;
-      els.lobby.classList.add("hidden");
-      els.roomBar.classList.remove("hidden");
-      els.table.classList.remove("hidden");
+      showTable();
       return;
     }
     if (msg.type === "error") { setMessage("Erro: " + msg.message); return; }
@@ -80,9 +85,41 @@ function connect() {
   });
 }
 
+function playLocal() {
+  mode = "local";
+  mySeat = 0;
+  const name = els.playerName.value.trim() || "Você";
+  localRoom = RU.makeRoom("landlord", "LOCAL", 3);
+  localRoom.seats[0] = { ws: {}, name, isAI: false };
+  localRoom.hooks = { update: () => { latest = LE.viewFor(localRoom, 0); render(); } };
+  showTable();
+  latest = LE.viewFor(localRoom, 0);
+  render();
+}
+
+function showTable() {
+  els.lobby.classList.add("hidden");
+  els.roomBar.classList.remove("hidden");
+  els.table.classList.remove("hidden");
+}
+
 function setMessage(txt) { els.message.textContent = txt; }
 
-function send(obj) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj)); }
+function send(obj) {
+  if (mode === "online") {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+    return;
+  }
+  if (mode === "local") {
+    if (obj.type === "startWithAI") { RU.fillWithAI(localRoom); localRoom.started = true; LE.deal(localRoom); return; }
+    if (obj.type === "newHand") return LE.requestNewHand(localRoom);
+    let result = null;
+    if (obj.type === "bid") result = LE.submitBid(localRoom, 0, obj.value);
+    else if (obj.type === "play") result = LE.submitPlay(localRoom, 0, obj.uids);
+    else if (obj.type === "pass") result = LE.submitPass(localRoom, 0);
+    if (result && !result.ok) setMessage("Erro: " + result.error);
+  }
+}
 
 els.startBtn.addEventListener("click", () => send({ type: "startWithAI" }));
 els.newBtn.addEventListener("click", () => send({ type: "newHand" }));

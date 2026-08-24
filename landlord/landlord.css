@@ -70,6 +70,12 @@ html, body {
   cursor: pointer;
   margin-top: 6px;
 }
+.lobby-box button.secondary {
+  background: transparent;
+  color: #e8c060;
+  border: 1px solid #35735a;
+  margin-top: 8px;
+}
 .lobby-box .hint { font-size: 0.72rem; opacity: 0.6; margin-top: 14px; line-height: 1.4; }
 .lobby-error { color: #ff8080; font-size: 0.8rem; min-height: 1.2em; }
 
@@ -207,6 +213,7 @@ html, body {
   display: flex;
   justify-content: center;
   min-height: 110px;
+  perspective: 900px;
 }
 .card {
   width: 58px;
@@ -215,7 +222,7 @@ html, body {
   background: linear-gradient(160deg, #fdf6e3, #f0e2b8);
   border: 1px solid #8a7343;
   border-radius: 6px;
-  box-shadow: 1px 2px 4px rgba(0,0,0,0.4);
+  box-shadow: 1px 3px 5px rgba(0,0,0,0.4), 0 6px 0 -2px rgba(138,115,67,0.5);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -224,12 +231,16 @@ html, body {
   color: #222;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.1s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
   position: relative;
 }
 .card:first-child { margin-left: 0; }
 .card.red { color: #b3122a; }
-.card.selected { transform: translateY(-16px); box-shadow: 1px 6px 10px rgba(0,0,0,0.5); }
+.card:hover { transform: translateY(-8px) rotateX(6deg); box-shadow: 2px 8px 10px rgba(0,0,0,0.45); }
+.card.selected {
+  transform: translateY(-20px) rotateX(10deg);
+  box-shadow: 2px 14px 16px rgba(0,0,0,0.5);
+}
 .card .rank { font-size: 16px; }
 .card .suit { font-size: 18px; }
 .card.joker { font-size: 12px; text-align: center; }

@@ -134,11 +134,11 @@ const BATIDA_LABELS = {
   batida: "Batida normal", carroca: "Carroça", laelo: "Lá-e-lô", cruzada: "Cruzada", empate: "Empate (redistribui)",
 };
 
-const api = {
+const DR_API = {
   buildDominoDeck, dealDomino, shuffle, pipSum, isDouble, findStarter,
   emptyBoard, legalSides, hasAnyLegalMove, applyMove, teamOf, scoreBatida,
   scoreBlocked, BATIDA_LABELS, TEAM_OF_SEAT,
 };
 
-if (typeof module !== "undefined" && module.exports) module.exports = api;
-if (typeof window !== "undefined") window.DominoRules = api;
+if (typeof module !== "undefined" && module.exports) module.exports = DR_API;
+if (typeof window !== "undefined") window.DominoRules = DR_API;

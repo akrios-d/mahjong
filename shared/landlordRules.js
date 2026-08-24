@@ -187,10 +187,10 @@ function handStrength(hand) {
   return score;
 }
 
-const api = {
+const LR_API = {
   RANKS, SUITS, buildDeck, shuffle, groupByRank, analyzeCombo, compareCombo,
   comboLabel, cardLabel, isRed, generateCandidateCombos, aiChooseFollow, aiChooseLead, handStrength,
 };
 
-if (typeof module !== "undefined" && module.exports) module.exports = api;
-if (typeof window !== "undefined") window.LandlordRules = api;
+if (typeof module !== "undefined" && module.exports) module.exports = LR_API;
+if (typeof window !== "undefined") window.LandlordRules = LR_API;

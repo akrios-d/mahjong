@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desenho & Adivinha</title>
+<link rel="stylesheet" href="desenho.css">
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/icon-192.png">
+<meta name="theme-color" content="#0f2027">
+<script src="../shared/pwa.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../index.html">&larr; voltar</a>
+    <h1>Desenho &amp; Adivinha <span class="tag">online</span></h1>
+    <div id="phaseLabel" class="phase">--</div>
+  </header>
+
+  <div id="lobby" class="lobby">
+    <div class="lobby-box">
+      <h2>Entrar em uma sala</h2>
+      <label>Endereço do servidor
+        <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
+      </label>
+      <label>Código da sala
+        <input id="roomCode" type="text" placeholder="ex: DESENHO1" maxlength="12">
+      </label>
+      <label>Seu nome
+        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      </label>
+      <button id="connectBtn">Entrar</button>
+      <p class="hint">Até 8 jogadores, só entre pessoas reais (sem bots — desenhar e
+        adivinhar não dá pra automatizar aqui). Cada rodada um jogador desenha e
+        os outros tentam adivinhar a palavra digitando no chat.</p>
+      <p id="lobbyError" class="lobby-error"></p>
+    </div>
+  </div>
+
+  <div id="roomBar" class="room-bar hidden">
+    <div class="seats-bar" id="seatsBar"></div>
+    <button id="startBtn" class="start-btn hidden">Começar</button>
+  </div>
+
+  <main id="table" class="table hidden">
+    <div class="draw-column">
+      <div class="round-info">
+        <div id="wordHint" class="word-hint">--</div>
+        <div id="timerLabel" class="timer">--</div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="800" height="600"></canvas>
+      </div>
+      <div id="toolbar" class="toolbar hidden">
+        <div class="colors" id="colors"></div>
+        <label>Espessura <input id="sizeRange" type="range" min="2" max="24" value="5"></label>
+        <button id="clearBtn">Limpar</button>
+      </div>
+    </div>
+    <div class="side-column">
+      <h3>Placar</h3>
+      <div id="scoreboard" class="scoreboard"></div>
+      <h3>Chat / palpites</h3>
+      <div id="chatBox" class="chat-box"></div>
+      <form id="guessForm" class="guess-form">
+        <input id="guessInput" type="text" placeholder="Digite seu palpite..." maxlength="60" autocomplete="off">
+        <button type="submit">Enviar</button>
+      </form>
+      <div id="messageBox" class="message"></div>
+    </div>
+  </main>
+
+  <script src="desenho-client.js"></script>
+</body>
+</html>

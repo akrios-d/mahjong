@@ -47,6 +47,12 @@ html, body {
   width: 100%; background: #d9a5f0; color: #241a33; border: none;
   border-radius: 8px; padding: 10px; font-weight: bold; cursor: pointer; margin-top: 6px;
 }
+.lobby-box button.secondary {
+  background: transparent;
+  color: #d9a5f0;
+  border: 1px solid #6b3f8f;
+  margin-top: 8px;
+}
 .lobby-box .hint { font-size: 0.72rem; opacity: 0.6; margin-top: 14px; line-height: 1.4; }
 .lobby-error { color: #ff8080; font-size: 0.8rem; min-height: 1.2em; }
 
@@ -112,17 +118,18 @@ html, body {
 .last-batida { font-size: 0.8rem; color: #6fd6ff; min-height: 1.2em; text-align: center; }
 
 .you { grid-area: you; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.hand { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; min-height: 70px; }
+.hand { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; min-height: 70px; perspective: 900px; }
 
 .domino-tile {
   display: flex;
   background: linear-gradient(160deg, #fdf6e3, #f0e2b8);
   border: 1px solid #8a7343;
   border-radius: 6px;
-  box-shadow: 1px 2px 4px rgba(0,0,0,0.4);
+  box-shadow: 1px 3px 4px rgba(0,0,0,0.4), 0 5px 0 -2px rgba(138,115,67,0.5);
   cursor: pointer;
   user-select: none;
   overflow: hidden;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 .domino-tile.static { cursor: default; }
 .domino-tile .half {
@@ -135,9 +142,10 @@ html, body {
   gap: 1px;
 }
 .domino-tile .divider { width: 2px; background: #8a7343; }
-.domino-tile .dot { border-radius: 50%; }
+.domino-tile .dot { border-radius: 50%; box-shadow: inset 0 1px 1px rgba(0,0,0,0.3); }
 .domino-tile .dot.on { background: #2a2a2a; }
-.domino-tile.selected { outline: 3px solid #d9a5f0; transform: translateY(-6px); }
+.domino-tile:not(.static):not(.disabled):hover { transform: translateY(-6px) rotateX(6deg); box-shadow: 2px 8px 10px rgba(0,0,0,0.45); }
+.domino-tile.selected { outline: 3px solid #d9a5f0; transform: translateY(-10px) rotateX(8deg); box-shadow: 2px 12px 14px rgba(0,0,0,0.5); }
 .domino-tile.disabled { opacity: 0.4; cursor: default; }
 
 .board-chain .domino-tile { cursor: default; }

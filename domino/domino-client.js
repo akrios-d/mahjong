@@ -1,8 +1,12 @@
 "use strict";
 
 const DR = window.DominoRules;
+const RU = window.RoomUtils;
+const DE = window.DominoEngine;
 
 let ws = null;
+let mode = null; // "online" | "local"
+let localRoom = null;
 let mySeat = -1;
 let latest = null;
 let selectedTileId = null;
@@ -13,6 +17,7 @@ const els = {
   roomCode: document.getElementById("roomCode"),
   playerName: document.getElementById("playerName"),
   connectBtn: document.getElementById("connectBtn"),
+  playLocalBtn: document.getElementById("playLocalBtn"),
   lobbyError: document.getElementById("lobbyError"),
 
   roomBar: document.getElementById("roomBar"),
@@ -56,14 +61,30 @@ els.playerName.value = "Jogador" + Math.floor(Math.random() * 900 + 100);
 
 function setLobbyError(msg) { els.lobbyError.textContent = msg || ""; }
 function setMessage(txt) { els.message.textContent = txt; }
-function send(obj) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj)); }
+
+function send(obj) {
+  if (mode === "online") {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+    return;
+  }
+  if (mode === "local") {
+    if (obj.type === "startWithAI") { RU.fillWithAI(localRoom); localRoom.started = true; DE.deal(localRoom); return; }
+    if (obj.type === "newHand") return DE.requestNewHand(localRoom);
+    let result = null;
+    if (obj.type === "playDomino") result = DE.submitPlay(localRoom, 0, obj.tileId, obj.side);
+    else if (obj.type === "passDomino") result = DE.submitPass(localRoom, 0);
+    if (result && !result.ok) setMessage("Erro: " + result.error);
+  }
+}
 
 els.connectBtn.addEventListener("click", connect);
+els.playLocalBtn.addEventListener("click", playLocal);
 
 function connect() {
   const url = els.serverUrl.value.trim() || defaultServerUrl();
   const room = els.roomCode.value.trim() || "MESA1";
   const name = els.playerName.value.trim() || "Jogador";
+  mode = "online";
   setLobbyError("Conectando...");
   try { ws = new WebSocket(url); } catch (e) { setLobbyError("Endereço inválido: " + e.message); return; }
 
@@ -74,14 +95,30 @@ function connect() {
     const msg = JSON.parse(ev.data);
     if (msg.type === "joined") {
       mySeat = msg.seatIdx;
-      els.lobby.classList.add("hidden");
-      els.roomBar.classList.remove("hidden");
-      els.table.classList.remove("hidden");
+      showTable();
       return;
     }
     if (msg.type === "error") { setMessage("Erro: " + msg.message); return; }
     if (msg.type === "state") { latest = msg.state; render(); }
   });
+}
+
+function playLocal() {
+  mode = "local";
+  mySeat = 0;
+  const name = els.playerName.value.trim() || "Você";
+  localRoom = RU.makeRoom("domino", "LOCAL", 4);
+  localRoom.seats[0] = { ws: {}, name, isAI: false };
+  localRoom.hooks = { update: () => { latest = DE.viewFor(localRoom, 0); render(); } };
+  showTable();
+  latest = DE.viewFor(localRoom, 0);
+  render();
+}
+
+function showTable() {
+  els.lobby.classList.add("hidden");
+  els.roomBar.classList.remove("hidden");
+  els.table.classList.remove("hidden");
 }
 
 els.startBtn.addEventListener("click", () => send({ type: "startWithAI" }));

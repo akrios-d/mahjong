@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adedonha</title>
+<link rel="stylesheet" href="adedonha.css">
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/icon-192.png">
+<meta name="theme-color" content="#0f2027">
+<script src="../shared/pwa.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../index.html">&larr; voltar</a>
+    <h1>Adedonha <span class="tag">online</span></h1>
+    <div id="phaseLabel" class="phase">--</div>
+  </header>
+
+  <div id="lobby" class="lobby">
+    <div class="lobby-box">
+      <h2>Entrar em uma sala</h2>
+      <label>Endereço do servidor
+        <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
+      </label>
+      <label>Código da sala
+        <input id="roomCode" type="text" placeholder="ex: STOP1" maxlength="12">
+      </label>
+      <label>Seu nome
+        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      </label>
+      <button id="connectBtn">Entrar online</button>
+      <button id="playLocalBtn" class="secondary">Jogar sozinho contra IA (sem servidor)</button>
+      <p class="hint">Até 8 jogadores por sala. Todo mundo propõe categorias,
+        sorteia a letra e escreve palavras que começam com ela até alguém
+        gritar "PARE!" ou o tempo acabar. O modo "sozinho" roda 100% no
+        seu navegador.</p>
+      <p id="lobbyError" class="lobby-error"></p>
+    </div>
+  </div>
+
+  <div id="roomBar" class="room-bar hidden">
+    <div class="seats-bar" id="seatsBar"></div>
+    <button id="startBtn" class="start-btn hidden">Começar com IA</button>
+    <button id="startNoAiBtn" class="start-btn secondary hidden">Começar só com quem entrou</button>
+  </div>
+
+  <main id="table" class="table hidden">
+    <section id="categoriesPanel" class="panel hidden">
+      <h2>Categorias</h2>
+      <ul id="categoryList" class="category-list"></ul>
+      <div class="add-category">
+        <input id="newCategory" type="text" placeholder="Nova categoria (ex: Time de futebol)" maxlength="24">
+        <button id="addCategoryBtn">Adicionar</button>
+        <button id="useDefaultsBtn">Usar categorias padrão</button>
+      </div>
+      <button id="startRoundBtn" class="primary-btn">Sortear letra e começar</button>
+    </section>
+
+    <section id="writingPanel" class="panel hidden">
+      <div class="round-header">
+        <div class="letter-badge" id="letterBadge">A</div>
+        <div class="timer" id="timerLabel">60s</div>
+        <button id="stopBtn" class="stop-btn">PARE!</button>
+      </div>
+      <div class="answers-grid" id="answersGrid"></div>
+      <div class="answered-status" id="answeredStatus"></div>
+    </section>
+
+    <section id="scoringPanel" class="panel hidden">
+      <h2 id="scoringTitle">Resultado da rodada</h2>
+      <div id="resultsTable" class="results-table"></div>
+      <h3>Placar geral</h3>
+      <div id="totalsTable" class="totals-table"></div>
+      <button id="nextRoundBtn" class="primary-btn">Nova rodada</button>
+    </section>
+
+    <div id="messageBox" class="message"></div>
+  </main>
+
+  <script src="../shared/adedonhaWords.js"></script>
+  <script src="../shared/roomUtils.js"></script>
+  <script src="../shared/adedonhaEngine.js"></script>
+  <script src="adedonha-client.js"></script>
+</body>
+</html>

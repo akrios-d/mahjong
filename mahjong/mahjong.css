@@ -54,6 +54,7 @@ html, body {
   min-height: 640px;
   padding: 40px 0 80px;
   overflow-x: auto;
+  perspective: 1000px;
 }
 
 .tile {
@@ -63,7 +64,6 @@ html, body {
   border-radius: 7px;
   background: linear-gradient(160deg, #fdf6e3, #f0e2b8);
   border: 1px solid #8a7343;
-  border-bottom: 4px solid #8a7343;
   box-shadow: 2px 3px 6px rgba(0,0,0,0.45);
   display: flex;
   align-items: center;
@@ -72,7 +72,20 @@ html, body {
   color: #2a2a2a;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.tile::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: -7px;
+  height: 8px;
+  background: linear-gradient(#c9ab5f, #8a7343);
+  border-radius: 0 0 6px 6px;
+  transform-origin: top;
+  transform: rotateX(-90deg);
 }
 .tile.covered {
   cursor: default;
@@ -80,12 +93,13 @@ html, body {
   box-shadow: 1px 2px 3px rgba(0,0,0,0.5);
 }
 .tile.free:hover {
-  transform: translateY(-3px);
-  box-shadow: 3px 6px 10px rgba(0,0,0,0.55);
+  transform: translateY(-4px) rotateX(8deg);
+  box-shadow: 3px 10px 16px rgba(0,0,0,0.55);
 }
 .tile.selected {
   outline: 3px solid #e8c060;
-  transform: translateY(-4px);
+  transform: translateY(-6px) rotateX(10deg);
+  box-shadow: 3px 12px 18px rgba(0,0,0,0.6);
 }
 .tile.hint {
   outline: 3px solid #6fd6ff;

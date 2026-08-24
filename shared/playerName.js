@@ -9,7 +9,7 @@
   }
   function set(name) {
     try {
-      var clean = String(name || "").trim().slice(0, 20);
+      var clean = String(name || "").trim().slice(0, 16);
       if (clean) localStorage.setItem(KEY, clean);
     } catch (e) { /* ignore */ }
   }

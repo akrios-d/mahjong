@@ -187,7 +187,11 @@ html, body {
 .domino-tile .dot.on { background: #2a2a2a; }
 .domino-tile:not(.static):not(.disabled):hover { transform: translateY(-6px) rotateX(6deg); box-shadow: 2px 8px 10px rgba(0,0,0,0.45); }
 .domino-tile.selected { outline: 3px solid #e8c060; transform: translateY(-10px) rotateX(8deg); box-shadow: 2px 12px 14px rgba(0,0,0,0.5); }
-.domino-tile.disabled { opacity: 0.4; cursor: default; }
+/* Dim, don't kill contrast: an opacity fade over the dark table made the
+   pips on unplayable tiles nearly impossible to read. Desaturating and
+   only slightly darkening keeps them legible while still visually
+   distinct from the (one or two) tiles you can actually play. */
+.domino-tile.disabled { filter: grayscale(0.65) brightness(0.8); cursor: default; }
 
 .board-chain .domino-tile { cursor: default; }
 .board-chain .domino-tile.double { outline: 2px solid #6fd6ff; }

@@ -1,6 +1,6 @@
 # Jogos de Mesa Online — Mahjong, Landlord, Dominó, Adedonha & Desenho
 
-Seis implementações originais, em HTML/CSS/JS puro no front-end (sem build,
+Cinco implementações originais, em HTML/CSS/JS puro no front-end (sem build,
 sem frameworks) mais um servidor Node/WebSocket para o multiplayer, dos
 jogos clássicos chineses/brasileiros/de festa que aparecem em
 *Where Winds Meet* (ou combinam com o clima):
@@ -8,9 +8,6 @@ jogos clássicos chineses/brasileiros/de festa que aparecem em
 - **Mahjong** (estilo Sichuan, igual ao mini-game do Where Winds Meet) —
   multiplayer online, 4 jogadores, 108 peças, Missing Suit, Pong/Kong/Chi/Hu,
   **ou** sozinho contra IA sem precisar de servidor.
-- **Mahjong Solitaire** (Turtle) — single-player: combine pares de peças
-  livres até limpar o tabuleiro. (Um jogo bem diferente do Mahjong acima —
-  ficou como bônus da primeira versão do projeto.)
 - **Landlord / Dou Dizhu (斗地主)** — multiplayer online (até 3 jogadores
   reais por sala) **ou** sozinho contra IA sem precisar de servidor.
 - **Dominó em Duplas** — multiplayer online (até 4 jogadores reais por sala,
@@ -23,9 +20,8 @@ jogos clássicos chineses/brasileiros/de festa que aparecem em
   adivinhar não dá pra automatizar com bot aqui).
 
 O app também funciona como **PWA**: dá pra instalar no celular/desktop e o
-app shell funciona offline (o multiplayer sempre precisa de rede, mas o
-Mahjong Solitaire e os modos "sozinho contra IA" funcionam sem internet
-depois de instalado).
+app shell funciona offline (o multiplayer sempre precisa de rede, mas os
+modos "sozinho contra IA" funcionam sem internet depois de instalado).
 
 Este projeto **não usa nenhum asset, código ou texto do jogo**
 *Where Winds Meet* — é uma recriação independente das regras de jogos
@@ -33,9 +29,8 @@ tradicionais chineses e brasileiros, que são de domínio público.
 
 ## Rodando localmente
 
-O Mahjong Solitaire e os modos **"sozinho contra IA"** do Mahjong/Landlord/
-Dominó não precisam de servidor — é só abrir o `index.html` do jogo no
-navegador.
+Os modos **"sozinho contra IA"** do Mahjong/Landlord/Dominó não precisam de
+servidor — é só abrir o `index.html` do jogo no navegador.
 
 Mahjong, Landlord, Dominó, Adedonha e Desenho (multiplayer online) precisam
 do servidor WebSocket rodando (ele guarda o estado das mesas e comanda a IA):
@@ -182,7 +177,6 @@ server/
   server.js                     servidor WebSocket (salas, estado autoritativo, IA)
   package.json
 mahjong/                        Mahjong estilo Where Winds Meet — online ou sozinho contra IA
-mahjong-solitaire/               Mahjong Solitaire (single-player, bônus)
 landlord/                       Landlord — online ou sozinho contra IA
 domino/                         Dominó em duplas — online ou sozinho contra IA
 adedonha/                       Adedonha — online (com bots)

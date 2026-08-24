@@ -1,7 +1,7 @@
 {
   "name": "Jogos de Mesa Online",
   "short_name": "Jogos",
-  "description": "Mahjong Solitaire, Landlord, Dominó em Duplas, Adedonha e Desenho & Adivinha — online e com IA.",
+  "description": "Mahjong, Landlord, Dominó em Duplas, Adedonha e Desenho & Adivinha — online e com IA.",
   "start_url": "index.html",
   "scope": "./",
   "display": "standalone",

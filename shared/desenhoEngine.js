@@ -13,7 +13,7 @@
   const REVEAL_MS = 5000;
 
   function update(room) { room.hooks.update(); }
-  function log(room, text) { RU.pushLog(room, text); }
+  function log(room, key, params) { RU.pushLog(room, key, params); }
 
   function activeSeats(room) {
     return room.seats.map((s, i) => i).filter((i) => !!room.seats[i].ws);
@@ -63,7 +63,7 @@
       log: room.state ? room.state.log : [],
     };
     activeSeats(room).forEach((i) => { room.state.scores[i] = 0; });
-    log(room, "Sala pronta.");
+    log(room, "desenho.log.roomReady");
     const started = startRound(room);
     if (!started.ok) { log(room, started.error); update(room); } // not enough players yet — stay in "idle" and show why
   }
@@ -93,16 +93,16 @@
     if (s.timer) { clearTimeout(s.timer); s.timer = null; }
     if (s.revealTimer) { clearTimeout(s.revealTimer); s.revealTimer = null; }
     const drawer = pickNextDrawer(room);
-    if (drawer === -1) return { ok: false, error: "Não há jogadores suficientes." };
-    if (activeSeats(room).length < 2) return { ok: false, error: "Precisa de pelo menos 2 jogadores conectados." };
+    if (drawer === -1) return { ok: false, error: "desenho.err.notEnoughPlayers" };
+    if (activeSeats(room).length < 2) return { ok: false, error: "desenho.err.needTwoPlayers" };
     s.drawerSeat = drawer;
     s.word = pickWord(room);
     s.guessedSeats = [];
     s.roundNumber++;
     s.phase = "drawing";
     s.roundEndAt = Date.now() + ROUND_MS;
-    s.chat.push({ system: true, text: `Rodada ${s.roundNumber}: ${room.seats[drawer].name} está desenhando!` });
-    log(room, `Rodada ${s.roundNumber}: ${room.seats[drawer].name} vai desenhar.`);
+    s.chat.push({ system: true, key: "desenho.chat.roundStart", params: { round: s.roundNumber, name: room.seats[drawer].name } });
+    log(room, "desenho.log.roundStart", { round: s.roundNumber, name: room.seats[drawer].name });
     update(room);
     s.timer = setTimeout(() => finishRound(room, "timeout"), ROUND_MS);
     return { ok: true };
@@ -113,8 +113,8 @@
     if (s.phase !== "drawing") return;
     if (s.timer) { clearTimeout(s.timer); s.timer = null; }
     s.phase = "reveal";
-    s.chat.push({ system: true, text: reason === "timeout" ? `Tempo esgotado! A palavra era "${s.word}".` : `Todo mundo acertou! A palavra era "${s.word}".` });
-    log(room, `Rodada ${s.roundNumber} encerrada (${reason}). Palavra: ${s.word}.`);
+    s.chat.push({ system: true, key: reason === "timeout" ? "desenho.chat.timeout" : "desenho.chat.allGuessed", params: { word: s.word } });
+    log(room, "desenho.log.roundEnded", { round: s.roundNumber, reason, word: s.word });
     update(room);
     s.revealTimer = setTimeout(() => {
       if (activeSeats(room).length >= 2) startRound(room);
@@ -123,11 +123,11 @@
 
   function submitGuess(room, seatIdx, text) {
     const s = room.state;
-    if (s.phase !== "drawing") return { ok: false, error: "Não há rodada em andamento." };
-    if (seatIdx === s.drawerSeat) return { ok: false, error: "Você é o desenhista dessa rodada." };
-    if (s.guessedSeats.includes(seatIdx)) return { ok: false, error: "Você já acertou essa rodada." };
+    if (s.phase !== "drawing") return { ok: false, error: "desenho.err.noRoundInProgress" };
+    if (seatIdx === s.drawerSeat) return { ok: false, error: "desenho.err.youAreDrawer" };
+    if (s.guessedSeats.includes(seatIdx)) return { ok: false, error: "desenho.err.alreadyGuessed" };
     const guess = String(text || "").trim().slice(0, 60);
-    if (!guess) return { ok: false, error: "Palpite vazio." };
+    if (!guess) return { ok: false, error: "desenho.err.emptyGuess" };
     const correct = normalize(guess) === normalize(s.word);
     const name = room.seats[seatIdx].name;
     if (correct) {
@@ -136,8 +136,8 @@
       s.scores[seatIdx] = (s.scores[seatIdx] || 0) + points;
       s.scores[s.drawerSeat] = (s.scores[s.drawerSeat] || 0) + 20;
       s.guessedSeats.push(seatIdx);
-      s.chat.push({ system: true, text: `${name} acertou! (+${points})` });
-      log(room, `${name} acertou a palavra.`);
+      s.chat.push({ system: true, key: "desenho.chat.correct", params: { name, points } });
+      log(room, "desenho.log.correct", { name });
       const activeGuessers = activeSeats(room).filter((i) => i !== s.drawerSeat);
       if (activeGuessers.every((i) => s.guessedSeats.includes(i))) {
         update(room);

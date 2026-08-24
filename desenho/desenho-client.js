@@ -1,5 +1,7 @@
 "use strict";
 
+const I18N = window.I18N;
+
 let ws = null;
 let mySeat = -1;
 let latest = null;
@@ -66,6 +68,9 @@ els.serverUrl.value = defaultServerUrl();
 els.roomCode.value = "DESENHO1";
 els.playerName.value = "Jogador" + Math.floor(Math.random() * 900 + 100);
 
+I18N.applyStaticI18n();
+I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });
+
 function setLobbyError(msg) { els.lobbyError.textContent = msg || ""; }
 function setMessage(txt) { els.message.textContent = txt; }
 function send(obj) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj)); }
@@ -76,12 +81,12 @@ function connect() {
   const url = els.serverUrl.value.trim() || defaultServerUrl();
   const room = els.roomCode.value.trim() || "DESENHO1";
   const name = els.playerName.value.trim() || "Jogador";
-  setLobbyError("Conectando...");
-  try { ws = new WebSocket(url); } catch (e) { setLobbyError("Endereço inválido: " + e.message); return; }
+  setLobbyError(I18N.t("common.lobby.connecting"));
+  try { ws = new WebSocket(url); } catch (e) { setLobbyError(I18N.t("common.lobby.invalidAddress", { error: e.message })); return; }
 
   ws.addEventListener("open", () => ws.send(JSON.stringify({ type: "join", game: "desenho", room, name })));
-  ws.addEventListener("close", () => setLobbyError("Conexão perdida com o servidor."));
-  ws.addEventListener("error", () => setLobbyError("Não foi possível conectar ao servidor."));
+  ws.addEventListener("close", () => setLobbyError(I18N.t("common.lobby.connectionLost")));
+  ws.addEventListener("error", () => setLobbyError(I18N.t("common.lobby.connectFailed")));
   ws.addEventListener("message", (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.type === "joined") {
@@ -91,7 +96,7 @@ function connect() {
       els.table.classList.remove("hidden");
       return;
     }
-    if (msg.type === "error") { setMessage("Erro: " + msg.message); return; }
+    if (msg.type === "error") { setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(msg.message)); return; }
     if (msg.type === "state") { latest = msg.state; render(); return; }
     if (msg.type === "stroke") { drawSegment({ x: msg.x0, y: msg.y0 }, { x: msg.x1, y: msg.y1 }, msg.color, msg.size); return; }
     if (msg.type === "clearCanvas") { clearCanvasLocal(); return; }
@@ -166,7 +171,7 @@ function render() {
 
   if (!latest.started) {
     els.startBtn.classList.remove("hidden");
-    els.phase.textContent = "Aguardando jogadores...";
+    els.phase.textContent = I18N.t("common.phase.waiting");
     els.toolbar.classList.add("hidden");
     stopTicking();
     return;
@@ -179,13 +184,13 @@ function render() {
   }
 
   if (latest.phase === "idle") {
-    els.phase.textContent = "Pronto para começar";
+    els.phase.textContent = I18N.t("desenho.phase.idle");
     els.wordHint.textContent = "--";
     els.timerLabel.textContent = "";
     els.toolbar.classList.add("hidden");
     stopTicking();
   } else if (latest.phase === "drawing") {
-    els.phase.textContent = latest.isDrawer ? "Sua vez de desenhar!" : `${drawerName()} está desenhando`;
+    els.phase.textContent = latest.isDrawer ? I18N.t("desenho.phase.yourTurn") : I18N.t("desenho.phase.someoneDrawing", { name: drawerName() });
     els.wordHint.textContent = latest.isDrawer || latest.word
       ? (latest.word || "").toUpperCase()
       : "_ ".repeat(latest.wordLength).trim();
@@ -193,7 +198,7 @@ function render() {
     els.canvas.style.cursor = latest.isDrawer ? "crosshair" : "default";
     startTicking();
   } else if (latest.phase === "reveal") {
-    els.phase.textContent = "Revelando...";
+    els.phase.textContent = I18N.t("desenho.phase.reveal");
     els.wordHint.textContent = (latest.word || "").toUpperCase();
     els.toolbar.classList.add("hidden");
     stopTicking();
@@ -206,7 +211,7 @@ function render() {
 
 function drawerName() {
   const seat = latest.seats[latest.drawerSeat];
-  return (seat && seat.name) || "alguém";
+  return (seat && seat.name) || I18N.t("desenho.someone");
 }
 
 function updateTimerDisplay() {
@@ -221,14 +226,14 @@ function renderScoreboard() {
   const entries = Object.entries(latest.scores || {}).sort((a, b) => b[1] - a[1]);
   els.scoreboard.innerHTML = entries.map(([seatIdx, pts]) => {
     const seat = latest.seats[Number(seatIdx)];
-    const name = (seat && seat.name) || `Assento ${Number(seatIdx) + 1}`;
+    const name = (seat && seat.name) || I18N.t("common.seat", { n: Number(seatIdx) + 1 });
     return `<div class="row"><span>${escapeHtml(name)}${Number(seatIdx) === latest.drawerSeat ? " ✏️" : ""}</span><span>${pts}</span></div>`;
   }).join("");
 }
 
 function renderChat() {
   els.chatBox.innerHTML = (latest.chat || []).map((m) => {
-    if (m.system) return `<div class="msg system">${escapeHtml(m.text)}</div>`;
+    if (m.system) return `<div class="msg system">${escapeHtml(I18N.t(m.key, m.params))}</div>`;
     return `<div class="msg${m.correct ? " correct" : ""}"><b>${escapeHtml(m.name)}:</b> ${escapeHtml(m.text)}</div>`;
   }).join("");
   els.chatBox.scrollTop = els.chatBox.scrollHeight;
@@ -242,8 +247,8 @@ function renderSeatsBar() {
     chip.className = "seat-chip";
     if (i === mySeat) chip.classList.add("you");
     if (latest.started && i === latest.drawerSeat) chip.classList.add("drawer");
-    const status = s.connected ? s.name : `${s.name} (offline)`;
-    chip.textContent = `Assento ${i + 1}: ${status}`;
+    const status = s.connected ? s.name : I18N.t("common.seat.offline", { name: s.name });
+    chip.textContent = I18N.t("common.seat.chip", { n: i + 1, status });
     els.seatsBar.appendChild(chip);
   });
 }

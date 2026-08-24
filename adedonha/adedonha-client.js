@@ -2,6 +2,7 @@
 
 const AE = window.AdedonhaEngine;
 const RU = window.RoomUtils;
+const I18N = window.I18N;
 
 let ws = null;
 let mode = null; // "online" | "local"
@@ -57,6 +58,9 @@ els.serverUrl.value = defaultServerUrl();
 els.roomCode.value = "STOP1";
 els.playerName.value = "Jogador" + Math.floor(Math.random() * 900 + 100);
 
+I18N.applyStaticI18n();
+I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });
+
 function setLobbyError(msg) { els.lobbyError.textContent = msg || ""; }
 function setMessage(txt) { els.message.textContent = txt; }
 
@@ -74,7 +78,7 @@ function send(obj) {
     else if (obj.type === "startRound") result = AE.startRound(localRoom, 0);
     else if (obj.type === "setAnswer") result = AE.submitSetAnswer(localRoom, 0, obj.category, obj.text);
     else if (obj.type === "stopRound") result = AE.submitStop(localRoom, 0);
-    if (result && !result.ok) setMessage("Erro: " + result.error);
+    if (result && !result.ok) setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(result.error));
   }
 }
 
@@ -86,16 +90,16 @@ function connect() {
   const room = els.roomCode.value.trim() || "STOP1";
   const name = els.playerName.value.trim() || "Jogador";
   mode = "online";
-  setLobbyError("Conectando...");
-  try { ws = new WebSocket(url); } catch (e) { setLobbyError("Endereço inválido: " + e.message); return; }
+  setLobbyError(I18N.t("common.lobby.connecting"));
+  try { ws = new WebSocket(url); } catch (e) { setLobbyError(I18N.t("common.lobby.invalidAddress", { error: e.message })); return; }
 
   ws.addEventListener("open", () => ws.send(JSON.stringify({ type: "join", game: "adedonha", room, name })));
-  ws.addEventListener("close", () => setLobbyError("Conexão perdida com o servidor."));
-  ws.addEventListener("error", () => setLobbyError("Não foi possível conectar ao servidor."));
+  ws.addEventListener("close", () => setLobbyError(I18N.t("common.lobby.connectionLost")));
+  ws.addEventListener("error", () => setLobbyError(I18N.t("common.lobby.connectFailed")));
   ws.addEventListener("message", (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.type === "joined") { mySeat = msg.seatIdx; showTable(); return; }
-    if (msg.type === "error") { setMessage("Erro: " + msg.message); return; }
+    if (msg.type === "error") { setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(msg.message)); return; }
     if (msg.type === "state") { latest = msg.state; render(); }
   });
 }
@@ -149,7 +153,7 @@ function render() {
   if (!latest.started) {
     els.startBtn.classList.remove("hidden");
     els.startNoAiBtn.classList.remove("hidden");
-    els.phase.textContent = "Aguardando jogadores...";
+    els.phase.textContent = I18N.t("common.phase.waiting");
     hideAllPanels();
     return;
   }
@@ -158,16 +162,16 @@ function render() {
 
   hideAllPanels();
   if (latest.phase === "categories") {
-    els.phase.textContent = "Escolhendo categorias";
+    els.phase.textContent = I18N.t("adedonha.phase.categories");
     els.categoriesPanel.classList.remove("hidden");
     renderCategories();
   } else if (latest.phase === "writing") {
-    els.phase.textContent = `Rodada ${latest.roundNumber} — escrevendo`;
+    els.phase.textContent = I18N.t("adedonha.phase.writing", { round: latest.roundNumber });
     els.writingPanel.classList.remove("hidden");
     renderWriting();
     startTicking();
   } else if (latest.phase === "scoring") {
-    els.phase.textContent = `Rodada ${latest.roundNumber} — resultado`;
+    els.phase.textContent = I18N.t("adedonha.phase.scoring", { round: latest.roundNumber });
     els.scoringPanel.classList.remove("hidden");
     renderScoring();
   }
@@ -183,7 +187,7 @@ function hideAllPanels() {
 function renderCategories() {
   els.categoryList.innerHTML = latest.categories.length
     ? latest.categories.map((c) => `<li>${escapeHtml(c)}</li>`).join("")
-    : '<li style="opacity:.6">nenhuma categoria ainda</li>';
+    : `<li style="opacity:.6">${I18N.t("adedonha.categories.none")}</li>`;
 }
 
 function renderWriting() {
@@ -227,9 +231,9 @@ function stopTicking() {
 
 function renderScoring() {
   const results = latest.roundResults || [];
-  let html = "<table><thead><tr><th>Jogador</th>";
+  let html = `<table><thead><tr><th>${I18N.t("common.player")}</th>`;
   html += latest.categories.map((c) => `<th>${escapeHtml(c)}</th>`).join("");
-  html += "<th>Total</th></tr></thead><tbody>";
+  html += `<th>${I18N.t("adedonha.scoring.total")}</th></tr></thead><tbody>`;
   for (const r of results) {
     html += `<tr><td>${escapeHtml(r.name || seatName(r.seatIdx))}</td>`;
     for (const cat of latest.categories) {
@@ -243,7 +247,7 @@ function renderScoring() {
   els.resultsTable.innerHTML = html;
 
   const totalsEntries = Object.entries(latest.totals || {}).sort((a, b) => b[1] - a[1]);
-  let th = "<table><thead><tr><th>Jogador</th><th>Pontos</th></tr></thead><tbody>";
+  let th = `<table><thead><tr><th>${I18N.t("common.player")}</th><th>${I18N.t("adedonha.scoring.points")}</th></tr></thead><tbody>`;
   for (const [seatIdx, pts] of totalsEntries) {
     th += `<tr><td>${escapeHtml(seatName(Number(seatIdx)))}</td><td class="points">${pts}</td></tr>`;
   }
@@ -252,8 +256,8 @@ function renderScoring() {
 }
 
 function seatName(i) {
-  if (i === mySeat) return "Você";
-  return (latest.seats[i] && latest.seats[i].name) || `Assento ${i + 1}`;
+  if (i === mySeat) return I18N.t("common.you");
+  return (latest.seats[i] && latest.seats[i].name) || I18N.t("common.seat", { n: i + 1 });
 }
 
 function renderSeatsBar() {
@@ -264,8 +268,8 @@ function renderSeatsBar() {
     chip.className = "seat-chip";
     if (i === mySeat) chip.classList.add("you");
     if (s.isAI) chip.classList.add("ai");
-    const status = s.name ? (s.isAI ? `${s.name} (IA)` : s.connected ? s.name : `${s.name} (offline)`) : "vazio";
-    chip.textContent = `Assento ${i + 1}: ${status}`;
+    const status = s.name ? (s.isAI ? I18N.t("common.seat.ai", { name: s.name }) : s.connected ? s.name : I18N.t("common.seat.offline", { name: s.name })) : I18N.t("common.seat.empty");
+    chip.textContent = I18N.t("common.seat.chip", { n: i + 1, status });
     els.seatsBar.appendChild(chip);
   });
 }

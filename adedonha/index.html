@@ -13,26 +13,27 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="back" href="../index.html">&larr; voltar</a>
-    <h1>Adedonha <span class="tag">online</span></h1>
+    <a class="back" href="../index.html" data-i18n="common.back">&larr; voltar</a>
+    <h1>Adedonha <span class="tag" data-i18n="landing.badge.online">online</span></h1>
+    <div class="lang-bar" id="langBar"></div>
     <div id="phaseLabel" class="phase">--</div>
   </header>
 
   <div id="lobby" class="lobby">
     <div class="lobby-box">
-      <h2>Entrar em uma sala</h2>
-      <label>Endereço do servidor
+      <h2 data-i18n="landlord.lobby.title">Entrar em uma sala</h2>
+      <label><span data-i18n="common.lobby.serverUrl">Endereço do servidor</span>
         <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
       </label>
-      <label>Código da sala
-        <input id="roomCode" type="text" placeholder="ex: STOP1" maxlength="12">
+      <label><span data-i18n="common.lobby.roomCode">Código da sala</span>
+        <input id="roomCode" type="text" data-i18n-placeholder="adedonha.lobby.roomCodePlaceholder" placeholder="ex: STOP1" maxlength="12">
       </label>
-      <label>Seu nome
-        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      <label><span data-i18n="common.lobby.playerName">Seu nome</span>
+        <input id="playerName" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
       </label>
-      <button id="connectBtn">Entrar online</button>
-      <button id="playLocalBtn" class="secondary">Jogar sozinho contra IA (sem servidor)</button>
-      <p class="hint">Até 8 jogadores por sala. Todo mundo propõe categorias,
+      <button id="connectBtn" data-i18n="common.lobby.connect">Entrar online</button>
+      <button id="playLocalBtn" class="secondary" data-i18n="adedonha.lobby.playLocal">Jogar sozinho contra IA (sem servidor)</button>
+      <p class="hint" data-i18n="adedonha.lobby.hint">Até 8 jogadores por sala. Todo mundo propõe categorias,
         sorteia a letra e escreve palavras que começam com ela até alguém
         gritar "PARE!" ou o tempo acabar. O modo "sozinho" roda 100% no
         seu navegador.</p>
@@ -42,43 +43,45 @@
 
   <div id="roomBar" class="room-bar hidden">
     <div class="seats-bar" id="seatsBar"></div>
-    <button id="startBtn" class="start-btn hidden">Começar com IA</button>
-    <button id="startNoAiBtn" class="start-btn secondary hidden">Começar só com quem entrou</button>
+    <button id="startBtn" class="start-btn hidden" data-i18n="common.startWithAI">Começar com IA</button>
+    <button id="startNoAiBtn" class="start-btn secondary hidden" data-i18n="adedonha.startNoAi">Começar só com quem entrou</button>
   </div>
 
   <main id="table" class="table hidden">
     <section id="categoriesPanel" class="panel hidden">
-      <h2>Categorias</h2>
+      <h2 data-i18n="adedonha.categories.title">Categorias</h2>
       <ul id="categoryList" class="category-list"></ul>
       <div class="add-category">
-        <input id="newCategory" type="text" placeholder="Nova categoria (ex: Time de futebol)" maxlength="24">
-        <button id="addCategoryBtn">Adicionar</button>
-        <button id="useDefaultsBtn">Usar categorias padrão</button>
+        <input id="newCategory" type="text" data-i18n-placeholder="adedonha.categories.newPlaceholder" placeholder="Nova categoria (ex: Time de futebol)" maxlength="24">
+        <button id="addCategoryBtn" data-i18n="adedonha.categories.add">Adicionar</button>
+        <button id="useDefaultsBtn" data-i18n="adedonha.categories.useDefaults">Usar categorias padrão</button>
       </div>
-      <button id="startRoundBtn" class="primary-btn">Sortear letra e começar</button>
+      <button id="startRoundBtn" class="primary-btn" data-i18n="adedonha.categories.startRound">Sortear letra e começar</button>
     </section>
 
     <section id="writingPanel" class="panel hidden">
       <div class="round-header">
         <div class="letter-badge" id="letterBadge">A</div>
         <div class="timer" id="timerLabel">60s</div>
-        <button id="stopBtn" class="stop-btn">PARE!</button>
+        <button id="stopBtn" class="stop-btn" data-i18n="adedonha.stop">PARE!</button>
       </div>
       <div class="answers-grid" id="answersGrid"></div>
       <div class="answered-status" id="answeredStatus"></div>
     </section>
 
     <section id="scoringPanel" class="panel hidden">
-      <h2 id="scoringTitle">Resultado da rodada</h2>
+      <h2 id="scoringTitle" data-i18n="adedonha.scoring.title">Resultado da rodada</h2>
       <div id="resultsTable" class="results-table"></div>
-      <h3>Placar geral</h3>
+      <h3 data-i18n="adedonha.scoring.totals">Placar geral</h3>
       <div id="totalsTable" class="totals-table"></div>
-      <button id="nextRoundBtn" class="primary-btn">Nova rodada</button>
+      <button id="nextRoundBtn" class="primary-btn" data-i18n="adedonha.scoring.nextRound">Nova rodada</button>
     </section>
 
     <div id="messageBox" class="message"></div>
   </main>
 
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/i18nDict.js"></script>
   <script src="../shared/adedonhaWords.js"></script>
   <script src="../shared/roomUtils.js"></script>
   <script src="../shared/adedonhaEngine.js"></script>

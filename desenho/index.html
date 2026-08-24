@@ -13,25 +13,26 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="back" href="../index.html">&larr; voltar</a>
-    <h1>Desenho &amp; Adivinha <span class="tag">online</span></h1>
+    <a class="back" href="../index.html" data-i18n="common.back">&larr; voltar</a>
+    <h1><span data-i18n="landing.desenho.title">Desenho &amp; Adivinha</span> <span class="tag" data-i18n="landing.badge.online">online</span></h1>
+    <div class="lang-bar" id="langBar"></div>
     <div id="phaseLabel" class="phase">--</div>
   </header>
 
   <div id="lobby" class="lobby">
     <div class="lobby-box">
-      <h2>Entrar em uma sala</h2>
-      <label>Endereço do servidor
+      <h2 data-i18n="landlord.lobby.title">Entrar em uma sala</h2>
+      <label><span data-i18n="common.lobby.serverUrl">Endereço do servidor</span>
         <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
       </label>
-      <label>Código da sala
-        <input id="roomCode" type="text" placeholder="ex: DESENHO1" maxlength="12">
+      <label><span data-i18n="common.lobby.roomCode">Código da sala</span>
+        <input id="roomCode" type="text" data-i18n-placeholder="desenho.lobby.roomCodePlaceholder" placeholder="ex: DESENHO1" maxlength="12">
       </label>
-      <label>Seu nome
-        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      <label><span data-i18n="common.lobby.playerName">Seu nome</span>
+        <input id="playerName" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
       </label>
-      <button id="connectBtn">Entrar</button>
-      <p class="hint">Até 8 jogadores, só entre pessoas reais (sem bots — desenhar e
+      <button id="connectBtn" data-i18n="desenho.lobby.connect">Entrar</button>
+      <p class="hint" data-i18n="desenho.lobby.hint">Até 8 jogadores, só entre pessoas reais (sem bots — desenhar e
         adivinhar não dá pra automatizar aqui). Cada rodada um jogador desenha e
         os outros tentam adivinhar a palavra digitando no chat.</p>
       <p id="lobbyError" class="lobby-error"></p>
@@ -40,7 +41,7 @@
 
   <div id="roomBar" class="room-bar hidden">
     <div class="seats-bar" id="seatsBar"></div>
-    <button id="startBtn" class="start-btn hidden">Começar</button>
+    <button id="startBtn" class="start-btn hidden" data-i18n="desenho.start">Começar</button>
   </div>
 
   <main id="table" class="table hidden">
@@ -54,23 +55,25 @@
       </div>
       <div id="toolbar" class="toolbar hidden">
         <div class="colors" id="colors"></div>
-        <label>Espessura <input id="sizeRange" type="range" min="2" max="24" value="5"></label>
-        <button id="clearBtn">Limpar</button>
+        <label><span data-i18n="desenho.thickness">Espessura</span> <input id="sizeRange" type="range" min="2" max="24" value="5"></label>
+        <button id="clearBtn" data-i18n="desenho.clear">Limpar</button>
       </div>
     </div>
     <div class="side-column">
-      <h3>Placar</h3>
+      <h3 data-i18n="common.scoreboard">Placar</h3>
       <div id="scoreboard" class="scoreboard"></div>
-      <h3>Chat / palpites</h3>
+      <h3 data-i18n="desenho.chat.title">Chat / palpites</h3>
       <div id="chatBox" class="chat-box"></div>
       <form id="guessForm" class="guess-form">
-        <input id="guessInput" type="text" placeholder="Digite seu palpite..." maxlength="60" autocomplete="off">
-        <button type="submit">Enviar</button>
+        <input id="guessInput" type="text" data-i18n-placeholder="desenho.chat.placeholder" placeholder="Digite seu palpite..." maxlength="60" autocomplete="off">
+        <button type="submit" data-i18n="desenho.chat.send">Enviar</button>
       </form>
       <div id="messageBox" class="message"></div>
     </div>
   </main>
 
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/i18nDict.js"></script>
   <script src="desenho-client.js"></script>
 </body>
 </html>

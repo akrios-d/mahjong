@@ -13,26 +13,27 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="back" href="../index.html">&larr; voltar</a>
-    <h1>Quebra-Cabeça <span class="tag">online</span></h1>
+    <a class="back" href="../index.html" data-i18n="common.back">&larr; voltar</a>
+    <h1><span data-i18n="landing.puzzle.title">Quebra-Cabeça</span> <span class="tag" data-i18n="landing.badge.online">online</span></h1>
+    <div class="lang-bar" id="langBar"></div>
     <div id="phaseLabel" class="phase">--</div>
   </header>
 
   <div id="lobby" class="lobby">
     <div class="lobby-box">
-      <h2>Entrar em uma sala</h2>
-      <label>Endereço do servidor
+      <h2 data-i18n="landlord.lobby.title">Entrar em uma sala</h2>
+      <label><span data-i18n="common.lobby.serverUrl">Endereço do servidor</span>
         <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
       </label>
-      <label>Código da sala
-        <input id="roomCode" type="text" placeholder="ex: QUEBRA1" maxlength="12">
+      <label><span data-i18n="common.lobby.roomCode">Código da sala</span>
+        <input id="roomCode" type="text" data-i18n-placeholder="puzzle.lobby.roomCodePlaceholder" placeholder="ex: QUEBRA1" maxlength="12">
       </label>
-      <label>Seu nome
-        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      <label><span data-i18n="common.lobby.playerName">Seu nome</span>
+        <input id="playerName" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
       </label>
-      <button id="connectBtn">Entrar online</button>
-      <button id="playLocalBtn" class="secondary">Montar sozinho (sem servidor)</button>
-      <p class="hint">Até 8 pessoas por sala, todo mundo arrasta peças ao mesmo
+      <button id="connectBtn" data-i18n="common.lobby.connect">Entrar online</button>
+      <button id="playLocalBtn" class="secondary" data-i18n="puzzle.lobby.playLocal">Montar sozinho (sem servidor)</button>
+      <p class="hint" data-i18n="puzzle.lobby.hint">Até 8 pessoas por sala, todo mundo arrasta peças ao mesmo
         tempo. Alguém envia uma foto, escolhe o tamanho da grade e as peças
         são cortadas com bordas onduladas geradas por uma cadeia de Markov
         (cada peça sai diferente, mas encaixa perfeitamente na vizinha).</p>
@@ -42,26 +43,26 @@
 
   <div id="roomBar" class="room-bar hidden">
     <div class="seats-bar" id="seatsBar"></div>
-    <button id="startBtn" class="start-btn hidden">Começar</button>
+    <button id="startBtn" class="start-btn hidden" data-i18n="desenho.start">Começar</button>
   </div>
 
   <main id="table" class="table hidden">
     <div id="setupPanel" class="panel hidden">
       <div id="uploadBox" class="upload-box">
         <label class="upload-label">
-          📷 Escolher foto
+          📷 <span data-i18n="puzzle.upload.choosePhoto">Escolher foto</span>
           <input id="fileInput" type="file" accept="image/*" class="visually-hidden">
         </label>
-        <img id="previewImg" class="preview-img hidden" alt="Prévia">
+        <img id="previewImg" class="preview-img hidden" data-i18n-alt="puzzle.upload.previewAlt" alt="Prévia">
       </div>
       <div id="gridBox" class="grid-box hidden">
-        <label>Linhas
+        <label><span data-i18n="puzzle.grid.rows">Linhas</span>
           <input id="rowsInput" type="number" min="2" max="8" value="4">
         </label>
-        <label>Colunas
+        <label><span data-i18n="puzzle.grid.cols">Colunas</span>
           <input id="colsInput" type="number" min="2" max="8" value="4">
         </label>
-        <button id="startPuzzleBtn" class="primary-btn">Cortar e começar</button>
+        <button id="startPuzzleBtn" class="primary-btn" data-i18n="puzzle.grid.start">Cortar e começar</button>
       </div>
     </div>
 
@@ -72,16 +73,18 @@
       <canvas id="canvas"></canvas>
     </div>
     <div id="messageBox" class="message"></div>
-    <button id="newPuzzleBtn" class="primary-btn hidden">Novo quebra-cabeça</button>
+    <button id="newPuzzleBtn" class="primary-btn hidden" data-i18n="puzzle.new">Novo quebra-cabeça</button>
   </main>
 
   <div id="winOverlay" class="overlay hidden">
     <div class="overlay-box">
-      <h2>Quebra-cabeça completo! 🎉</h2>
-      <button id="playAgainBtn">Novo quebra-cabeça</button>
+      <h2 data-i18n="puzzle.win.title">Quebra-cabeça completo! 🎉</h2>
+      <button id="playAgainBtn" data-i18n="puzzle.new">Novo quebra-cabeça</button>
     </div>
   </div>
 
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/i18nDict.js"></script>
   <script src="../shared/puzzleShapes.js"></script>
   <script src="../shared/roomUtils.js"></script>
   <script src="../shared/puzzleEngine.js"></script>

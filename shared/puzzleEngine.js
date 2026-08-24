@@ -12,7 +12,7 @@
   const SNAP_DIST = 22; // logical units (puzzle space is ~1000 wide)
 
   function update(room) { room.hooks.update(); }
-  function log(room, text) { RU.pushLog(room, text); }
+  function log(room, key, params) { RU.pushLog(room, key, params); }
 
   function activeSeats(room) {
     return room.seats.map((s, i) => i).filter((i) => !!room.seats[i].ws);
@@ -47,18 +47,18 @@
       pieces: null,
       log: room.state ? room.state.log : [],
     };
-    log(room, "Sala pronta. Envie uma foto pra começar o quebra-cabeça.");
+    log(room, "puzzle.log.roomReady");
     update(room);
   }
 
   function submitUploadImage(room, seatIdx, dataUrl, aspect) {
     const s = room.state;
-    if (s.phase === "playing") return { ok: false, error: "Já tem um quebra-cabeça em andamento." };
-    if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) return { ok: false, error: "Imagem inválida." };
-    if (dataUrl.length > 3_000_000) return { ok: false, error: "Imagem grande demais." };
+    if (s.phase === "playing") return { ok: false, error: "puzzle.err.alreadyPlaying" };
+    if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) return { ok: false, error: "puzzle.err.invalidImage" };
+    if (dataUrl.length > 3_000_000) return { ok: false, error: "puzzle.err.imageTooBig" };
     s.imageData = dataUrl;
     s.aspect = aspect > 0 ? aspect : 1;
-    log(room, `${room.seats[seatIdx].name} enviou a foto.`);
+    log(room, "puzzle.log.photoUploaded", { name: room.seats[seatIdx].name });
     update(room);
     room.hooks.image && room.hooks.image(dataUrl);
     return { ok: true };
@@ -66,7 +66,7 @@
 
   function submitStartPuzzle(room, seatIdx, rows, cols) {
     const s = room.state;
-    if (!s.imageData) return { ok: false, error: "Envie uma foto primeiro." };
+    if (!s.imageData) return { ok: false, error: "puzzle.err.uploadFirst" };
     rows = Math.max(2, Math.min(8, Math.round(rows) || 4));
     cols = Math.max(2, Math.min(8, Math.round(cols) || 4));
     const layout = PS.computeLayout(rows, cols, s.aspect);
@@ -96,16 +96,16 @@
     s.signature = signature;
     s.pieces = pieces;
     s.phase = "playing";
-    log(room, `${room.seats[seatIdx].name} montou o quebra-cabeça: ${rows}x${cols} peças. Bora!`);
+    log(room, "puzzle.log.started", { name: room.seats[seatIdx].name, rows, cols });
     update(room);
     return { ok: true };
   }
 
   function submitMovePiece(room, seatIdx, pieceId, x, y) {
     const s = room.state;
-    if (s.phase !== "playing") return { ok: false, error: "Nenhum quebra-cabeça em andamento." };
+    if (s.phase !== "playing") return { ok: false, error: "puzzle.err.notPlaying" };
     const piece = s.pieces.find((p) => p.id === pieceId);
-    if (!piece || piece.locked) return { ok: false, error: "Peça inválida." };
+    if (!piece || piece.locked) return { ok: false, error: "puzzle.err.invalidPiece" };
     piece.x = x; piece.y = y;
     s.zCounter = (s.zCounter || 0) + 1;
     piece.z = s.zCounter;
@@ -115,9 +115,9 @@
 
   function submitDropPiece(room, seatIdx, pieceId, x, y) {
     const s = room.state;
-    if (s.phase !== "playing") return { ok: false, error: "Nenhum quebra-cabeça em andamento." };
+    if (s.phase !== "playing") return { ok: false, error: "puzzle.err.notPlaying" };
     const piece = s.pieces.find((p) => p.id === pieceId);
-    if (!piece || piece.locked) return { ok: false, error: "Peça inválida." };
+    if (!piece || piece.locked) return { ok: false, error: "puzzle.err.invalidPiece" };
     const dist = Math.hypot(x - piece.targetX, y - piece.targetY);
     if (dist <= SNAP_DIST) {
       piece.x = piece.targetX; piece.y = piece.targetY; piece.locked = true;
@@ -127,7 +127,7 @@
     const allLocked = s.pieces.every((p) => p.locked);
     if (allLocked) {
       s.phase = "solved";
-      log(room, "Quebra-cabeça completo! 🎉");
+      log(room, "puzzle.log.solved");
     }
     update(room);
     return { ok: true, locked: piece.locked };
@@ -138,7 +138,7 @@
     if (!s) return;
     s.phase = "setup";
     s.pieces = null; s.rows = 0; s.cols = 0;
-    log(room, "Pronto pra outra rodada — escolha o tamanho da grade e comece de novo.");
+    log(room, "puzzle.log.readyForNext");
     update(room);
   }
 

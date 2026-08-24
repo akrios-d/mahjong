@@ -11,7 +11,7 @@
   const LETTERS = "ABCDEFGHIJLMNOPQRSTUV".split(""); // skip K/W/X/Y/Z: too few valid Portuguese answers
 
   function update(room) { room.hooks.update(); }
-  function log(room, text) { RU.pushLog(room, text); }
+  function log(room, key, params) { RU.pushLog(room, key, params); }
 
   function activeSeats(room) {
     return room.seats.map((s, i) => i).filter((i) => room.seats[i].ws || room.seats[i].isAI);
@@ -52,31 +52,31 @@
       log: room.state ? room.state.log : [],
     };
     activeSeats(room).forEach((i) => { room.state.totals[i] = 0; });
-    log(room, "Sala pronta. Proponham categorias e sorteiem a letra quando quiserem começar.");
+    log(room, "adedonha.log.roomReady");
     update(room);
   }
 
   function submitAddCategory(room, seatIdx, text) {
     const s = room.state;
-    if (s.phase !== "categories") return { ok: false, error: "Categorias só podem ser alteradas antes da 1ª rodada." };
+    if (s.phase !== "categories") return { ok: false, error: "adedonha.err.categoriesLocked" };
     const clean = String(text || "").trim().slice(0, 24);
-    if (!clean) return { ok: false, error: "Categoria vazia." };
-    if (s.categories.length >= 8) return { ok: false, error: "Máximo de 8 categorias." };
-    if (s.categories.some((c) => c.toLowerCase() === clean.toLowerCase())) return { ok: false, error: "Categoria repetida." };
+    if (!clean) return { ok: false, error: "adedonha.err.emptyCategory" };
+    if (s.categories.length >= 8) return { ok: false, error: "adedonha.err.maxCategories" };
+    if (s.categories.some((c) => c.toLowerCase() === clean.toLowerCase())) return { ok: false, error: "adedonha.err.duplicateCategory" };
     s.categories.push(clean);
-    log(room, `${room.seats[seatIdx].name} adicionou a categoria "${clean}".`);
+    log(room, "adedonha.log.categoryAdded", { name: room.seats[seatIdx].name, category: clean });
     update(room);
     return { ok: true };
   }
 
   function submitUseDefaults(room) {
     const s = room.state;
-    if (s.phase !== "categories") return { ok: false, error: "Só antes da 1ª rodada." };
+    if (s.phase !== "categories") return { ok: false, error: "adedonha.err.onlyBeforeFirstRound" };
     for (const c of AW.DEFAULT_CATEGORIES) {
       if (s.categories.length >= 8) break;
       if (!s.categories.some((x) => x.toLowerCase() === c.toLowerCase())) s.categories.push(c);
     }
-    log(room, "Categorias padrão adicionadas.");
+    log(room, "adedonha.log.defaultsAdded");
     update(room);
     return { ok: true };
   }
@@ -92,7 +92,7 @@
 
   function startRound(room, seatIdx) {
     const s = room.state;
-    if (s.phase !== "categories" && s.phase !== "scoring") return { ok: false, error: "Rodada já em andamento." };
+    if (s.phase !== "categories" && s.phase !== "scoring") return { ok: false, error: "adedonha.err.roundInProgress" };
     if (s.categories.length === 0) {
       for (const c of AW.DEFAULT_CATEGORIES.slice(0, 5)) s.categories.push(c);
     }
@@ -104,7 +104,7 @@
     s.answers = {};
     const active = activeSeats(room);
     active.forEach((i) => { s.answers[i] = {}; });
-    log(room, `Rodada ${s.roundNumber}: letra sorteada "${s.letter}"!`);
+    log(room, "adedonha.log.letterDrawn", { round: s.roundNumber, letter: s.letter });
     update(room);
     scheduleAI(room);
     s.timer = setTimeout(() => finishRound(room), ROUND_MS);
@@ -128,8 +128,8 @@
 
   function submitSetAnswer(room, seatIdx, category, text) {
     const s = room.state;
-    if (s.phase !== "writing") return { ok: false, error: "Não é a fase de escrever." };
-    if (!s.answers[seatIdx]) return { ok: false, error: "Assento inativo." };
+    if (s.phase !== "writing") return { ok: false, error: "adedonha.err.notWritingPhase" };
+    if (!s.answers[seatIdx]) return { ok: false, error: "adedonha.err.inactiveSeat" };
     s.answers[seatIdx][category] = String(text || "").slice(0, 40);
     return { ok: true }; // intentionally no update(): avoids re-rendering everyone's own typing every keystroke
   }
@@ -163,14 +163,14 @@
     results.forEach((r) => { s.totals[r.seatIdx] = (s.totals[r.seatIdx] || 0) + r.roundTotal; });
     s.lastResults = results;
     s.phase = "scoring";
-    log(room, `Rodada ${s.roundNumber} encerrada! Confiram a pontuação.`);
+    log(room, "adedonha.log.roundOver", { round: s.roundNumber });
     update(room);
   }
 
   function submitStop(room, seatIdx) {
     const s = room.state;
-    if (s.phase !== "writing") return { ok: false, error: "Nenhuma rodada em andamento." };
-    log(room, `${room.seats[seatIdx].name} gritou PARE!`);
+    if (s.phase !== "writing") return { ok: false, error: "adedonha.err.noRoundInProgress" };
+    log(room, "adedonha.log.stopped", { name: room.seats[seatIdx].name });
     finishRound(room);
     return { ok: true };
   }

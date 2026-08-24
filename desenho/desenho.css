@@ -10,7 +10,12 @@ html, body {
 .topbar h1 { font-size: 1.1rem; margin: 0; color: #6fd6ff; }
 .back { color: #cfe; text-decoration: none; opacity: 0.8; }
 .back:hover { opacity: 1; }
-.phase { margin-left: auto; opacity: 0.85; font-size: 0.9rem; }
+.lang-bar { margin-left: auto; }
+.lang-bar .lang-switcher {
+  background: rgba(255,255,255,0.08); color: #f2f2f2; border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px; padding: 5px 10px; font-size: 0.8rem;
+}
+.phase { opacity: 0.85; font-size: 0.9rem; }
 .tag { font-size: 0.6rem; vertical-align: middle; background: #1f4a5c; color: #cdf3ff; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
 
 .lobby { display: flex; align-items: center; justify-content: center; min-height: 70vh; }

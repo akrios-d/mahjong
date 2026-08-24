@@ -3,6 +3,7 @@
 const PS = window.PuzzleShapes;
 const RU = window.RoomUtils;
 const PZE = window.PuzzleEngine;
+const I18N = window.I18N;
 
 let ws = null;
 let mode = null; // "online" | "local"
@@ -57,6 +58,9 @@ els.serverUrl.value = defaultServerUrl();
 els.roomCode.value = "QUEBRA1";
 els.playerName.value = "Jogador" + Math.floor(Math.random() * 900 + 100);
 
+I18N.applyStaticI18n();
+I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });
+
 function setLobbyError(msg) { els.lobbyError.textContent = msg || ""; }
 function setMessage(txt) { els.message.textContent = txt; }
 
@@ -73,7 +77,7 @@ function send(obj) {
     else if (obj.type === "startPuzzle") result = PZE.submitStartPuzzle(localRoom, 0, obj.rows, obj.cols);
     else if (obj.type === "movePiece") result = PZE.submitMovePiece(localRoom, 0, obj.pieceId, obj.x, obj.y);
     else if (obj.type === "dropPiece") result = PZE.submitDropPiece(localRoom, 0, obj.pieceId, obj.x, obj.y);
-    if (result && !result.ok) setMessage("Erro: " + result.error);
+    if (result && !result.ok) setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(result.error));
   }
 }
 
@@ -85,16 +89,16 @@ function connect() {
   const room = els.roomCode.value.trim() || "QUEBRA1";
   const name = els.playerName.value.trim() || "Jogador";
   mode = "online";
-  setLobbyError("Conectando...");
-  try { ws = new WebSocket(url); } catch (e) { setLobbyError("Endereço inválido: " + e.message); return; }
+  setLobbyError(I18N.t("common.lobby.connecting"));
+  try { ws = new WebSocket(url); } catch (e) { setLobbyError(I18N.t("common.lobby.invalidAddress", { error: e.message })); return; }
 
   ws.addEventListener("open", () => ws.send(JSON.stringify({ type: "join", game: "puzzle", room, name })));
-  ws.addEventListener("close", () => setLobbyError("Conexão perdida com o servidor."));
-  ws.addEventListener("error", () => setLobbyError("Não foi possível conectar ao servidor."));
+  ws.addEventListener("close", () => setLobbyError(I18N.t("common.lobby.connectionLost")));
+  ws.addEventListener("error", () => setLobbyError(I18N.t("common.lobby.connectFailed")));
   ws.addEventListener("message", (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.type === "joined") { mySeat = msg.seatIdx; showTable(); return; }
-    if (msg.type === "error") { setMessage("Erro: " + msg.message); return; }
+    if (msg.type === "error") { setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(msg.message)); return; }
     if (msg.type === "image") { loadPuzzleImage(msg.dataUrl); return; }
     if (msg.type === "state") { applyState(msg.state); return; }
   });
@@ -145,7 +149,7 @@ els.fileInput.addEventListener("change", async () => {
     els.gridBox.classList.remove("hidden");
     send({ type: "uploadImage", dataUrl, aspect });
   } catch (e) {
-    setMessage("Não consegui ler essa imagem: " + e.message);
+    setMessage(I18N.t("puzzle.err.readImage", { error: e.message }));
   }
 });
 
@@ -158,10 +162,10 @@ els.startPuzzleBtn.addEventListener("click", () => {
 function resizeImageFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = () => reject(new Error("falha ao ler o arquivo"));
+    reader.onerror = () => reject(new Error(I18N.t("puzzle.err.fileRead")));
     reader.onload = () => {
       const img = new Image();
-      img.onerror = () => reject(new Error("formato de imagem inválido"));
+      img.onerror = () => reject(new Error(I18N.t("puzzle.err.invalidImage")));
       img.onload = () => {
         const maxDim = 900;
         const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
@@ -186,10 +190,10 @@ function loadPuzzleImage(dataUrl) {
 /* ---------------- rendering ---------------- */
 function render() {
   if (!latest) return;
-  els.phase.textContent = !latest.started ? "Aguardando jogadores..."
-    : latest.phase === "setup" ? "Preparando quebra-cabeça"
-    : latest.phase === "playing" ? "Montando..."
-    : "Completo!";
+  els.phase.textContent = !latest.started ? I18N.t("common.phase.waiting")
+    : latest.phase === "setup" ? I18N.t("puzzle.phase.setup")
+    : latest.phase === "playing" ? I18N.t("puzzle.phase.playing")
+    : I18N.t("puzzle.phase.solved");
 
   renderSeatsBar();
 
@@ -204,7 +208,7 @@ function render() {
   els.progressBar.classList.toggle("hidden", latest.phase !== "playing" && latest.phase !== "solved");
 
   if (latest.phase === "playing" || latest.phase === "solved") {
-    els.progressLabel.textContent = `${latest.lockedCount} / ${latest.totalCount} peças encaixadas`;
+    els.progressLabel.textContent = I18N.t("puzzle.progress", { locked: latest.lockedCount, total: latest.totalCount });
     resizeCanvasIfNeeded();
     drawBoard();
   } else {
@@ -328,8 +332,8 @@ function renderSeatsBar() {
     const chip = document.createElement("div");
     chip.className = "seat-chip";
     if (i === mySeat) chip.classList.add("you");
-    const status = s.connected ? s.name : `${s.name} (offline)`;
-    chip.textContent = `Assento ${i + 1}: ${status}`;
+    const status = s.connected ? s.name : I18N.t("common.seat.offline", { name: s.name });
+    chip.textContent = I18N.t("common.seat.chip", { n: i + 1, status });
     els.seatsBar.appendChild(chip);
   });
 }

@@ -1,0 +1,161 @@
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #1a2a3a, #0b1420 70%);
+  color: #f2f2f2;
+  font-family: "Segoe UI", "Noto Sans", sans-serif;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+  background: rgba(0,0,0,0.3);
+}
+.topbar h1 { font-size: 1.1rem; margin: 0; color: #e8c060; }
+.back { color: #cfe; text-decoration: none; opacity: 0.8; }
+.back:hover { opacity: 1; }
+.phase { margin-left: auto; opacity: 0.85; font-size: 0.9rem; }
+
+.table {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+  padding: 20px;
+  min-height: 80vh;
+}
+.opponent {
+  text-align: center;
+}
+.opponent .name { font-weight: bold; margin-bottom: 4px; }
+.role { font-size: 0.8rem; color: #e8c060; min-height: 1.1em; }
+.hand-back {
+  display: flex;
+  justify-content: center;
+  gap: -10px;
+}
+.hand-back .card-back {
+  width: 34px;
+  height: 48px;
+  margin-left: -18px;
+  background: linear-gradient(160deg, #34506b, #1c2f42);
+  border: 1px solid #567;
+  border-radius: 5px;
+}
+.hand-back .card-back:first-child { margin-left: 0; }
+.lastplay {
+  min-height: 60px;
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.lastplay .mini-card {
+  width: 30px;
+  height: 42px;
+  border-radius: 4px;
+  background: #fdf6e3;
+  color: #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: 1px solid #8a7343;
+}
+.lastplay.big .mini-card { width: 38px; height: 54px; font-size: 15px; }
+
+.center {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.kitty { display: flex; gap: 6px; }
+.kitty .mini-card { width: 30px; height: 42px; border-radius: 4px; background: #fdf6e3; color: #222; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; border: 1px solid #8a7343; }
+
+.bid-box {
+  text-align: center;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid #35735a;
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.bid-box.hidden { display: none; }
+.bid-buttons { display: flex; gap: 8px; margin-top: 10px; }
+.bid-buttons button {
+  background: #1f4235; color: #fff; border: 1px solid #35735a;
+  border-radius: 8px; padding: 6px 14px; cursor: pointer;
+}
+.bid-buttons button:hover { background: #2b5c48; }
+
+.message { min-height: 1.4em; color: #ffd27a; font-size: 0.95rem; text-align: center; }
+
+.you {
+  grid-column: 1 / span 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+}
+.you .name { font-weight: bold; }
+.hand {
+  display: flex;
+  justify-content: center;
+  min-height: 110px;
+}
+.card {
+  width: 58px;
+  height: 84px;
+  margin-left: -26px;
+  background: linear-gradient(160deg, #fdf6e3, #f0e2b8);
+  border: 1px solid #8a7343;
+  border-radius: 6px;
+  box-shadow: 1px 2px 4px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #222;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease;
+  position: relative;
+}
+.card:first-child { margin-left: 0; }
+.card.red { color: #b3122a; }
+.card.selected { transform: translateY(-16px); box-shadow: 1px 6px 10px rgba(0,0,0,0.5); }
+.card .rank { font-size: 16px; }
+.card .suit { font-size: 18px; }
+.card.joker { font-size: 12px; text-align: center; }
+
+.controls { display: flex; gap: 10px; }
+.controls button {
+  background: #1f4235; color: #fff; border: 1px solid #35735a;
+  border-radius: 8px; padding: 8px 16px; cursor: pointer;
+}
+.controls button:hover { background: #2b5c48; }
+.controls button:disabled { opacity: 0.4; cursor: default; }
+
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.overlay.hidden { display: none; }
+.overlay-box {
+  background: #16283a; border: 1px solid #35735a; border-radius: 14px;
+  padding: 30px 36px; text-align: center;
+}
+.overlay-box button {
+  margin-top: 16px; background: #e8c060; color: #1a1a1a; border: none;
+  border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer;
+}

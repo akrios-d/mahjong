@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landlord (斗地主)</title>
+<link rel="stylesheet" href="landlord.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../index.html">&larr; voltar</a>
+    <h1>Landlord &middot; 斗地主</h1>
+    <div id="phaseLabel" class="phase">Distribuindo...</div>
+  </header>
+
+  <main class="table">
+    <div class="opponent left">
+      <div class="name">Bot A</div>
+      <div class="role" id="roleA"></div>
+      <div class="hand-back" id="handA"></div>
+      <div class="lastplay" id="lastA"></div>
+    </div>
+    <div class="opponent right">
+      <div class="name">Bot B</div>
+      <div class="role" id="roleB"></div>
+      <div class="hand-back" id="handB"></div>
+      <div class="lastplay" id="lastB"></div>
+    </div>
+
+    <div class="center">
+      <div class="kitty" id="kitty"></div>
+      <div class="lastplay big" id="lastYou"></div>
+      <div id="bidBox" class="bid-box hidden">
+        <p id="bidPrompt">Sua vez de dar lance</p>
+        <div class="bid-buttons">
+          <button data-bid="0">Passar</button>
+          <button data-bid="1">1</button>
+          <button data-bid="2">2</button>
+          <button data-bid="3">3</button>
+        </div>
+      </div>
+      <div id="messageBox" class="message"></div>
+    </div>
+
+    <div class="you">
+      <div class="name">Você <span class="role" id="roleYou"></span></div>
+      <div class="hand" id="handYou"></div>
+      <div class="controls">
+        <button id="playBtn">Jogar</button>
+        <button id="passBtn">Passar</button>
+        <button id="hintBtn">Sugerir</button>
+        <button id="newBtn">Nova partida</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="endOverlay" class="overlay hidden">
+    <div class="overlay-box">
+      <h2 id="endTitle"></h2>
+      <p id="endStats"></p>
+      <button id="playAgainBtn">Jogar de novo</button>
+    </div>
+  </div>
+
+  <script src="landlord.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+:root {
+  --bg: #0f2027;
+  --bg2: #203a43;
+  --bg3: #2c5364;
+  --card: rgba(255,255,255,0.06);
+  --accent: #e8c060;
+  --text: #f2f2f2;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", "Noto Sans", sans-serif;
+  background: linear-gradient(135deg, var(--bg), var(--bg2), var(--bg3));
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.landing {
+  text-align: center;
+  padding: 40px;
+}
+.landing h1 {
+  font-size: 2.4rem;
+  margin-bottom: 0.2em;
+  letter-spacing: 2px;
+}
+.landing p.sub {
+  opacity: 0.75;
+  margin-bottom: 2.5em;
+}
+.games {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.game-card {
+  width: 260px;
+  padding: 28px 22px;
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  backdrop-filter: blur(6px);
+}
+.game-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent);
+}
+.game-card .glyph {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 14px;
+}
+.game-card h2 {
+  margin: 0 0 8px;
+  color: var(--accent);
+}
+.game-card p {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  line-height: 1.4;
+}
+footer.note {
+  margin-top: 2.5em;
+  font-size: 0.75rem;
+  opacity: 0.5;
+  max-width: 560px;
+}

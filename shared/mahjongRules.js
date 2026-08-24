@@ -217,6 +217,9 @@ const GROUP_LABELS = {
 // (by uid) already contribute, and which tile(s) would complete/extend it?
 // Used by the "tap a tile to inspect" UI so a player can check a tile's
 // potential before deciding to discard it.
+// Returns structured data only (status + group values + waits) — no
+// pre-built text — so callers can render the explanation in their own
+// language via shared/i18n.js (see mahjong.tileInfo.* keys).
 function tileGuidance(hand, missingSuit, uid) {
   const tile = hand.find((t) => t.uid === uid);
   if (!tile) return null;
@@ -224,13 +227,13 @@ function tileGuidance(hand, missingSuit, uid) {
   const group = analysis.groups.find((g) => g.tiles.some((t) => t.uid === uid));
 
   if (group && group.type === "triplet") {
-    return { tile, status: "triplet", waits: [], text: `Já forma uma trinca (${group.tiles.map((t) => t.value).join("-")} ${SUIT_LABEL[tile.suit]}). Já conta como um dos 4 grupos — pode ainda virar Kong se comprar/reagir à 4ª igual.` };
+    return { tile, status: "triplet", groupValues: group.tiles.map((t) => t.value), waits: [] };
   }
   if (group && group.type === "run") {
-    return { tile, status: "run", waits: [], text: `Já faz parte de uma sequência completa (${group.tiles.map((t) => t.value).join("-")} ${SUIT_LABEL[tile.suit]}). Já conta como um dos 4 grupos.` };
+    return { tile, status: "run", groupValues: group.tiles.map((t) => t.value), waits: [] };
   }
   if (group && group.type === "pair") {
-    return { tile, status: "pair", waits: [], text: `Já forma o par da mão (${tile.value} ${SUIT_LABEL[tile.suit]}). Você só precisa de 1 par no total — não precisa de mais peças iguais a essa.` };
+    return { tile, status: "pair", groupValues: group.tiles.map((t) => t.value), waits: [] };
   }
   if (group && group.type === "partial_run") {
     const vals = group.tiles.map((t) => t.value).sort((a, b) => a - b);
@@ -241,40 +244,37 @@ function tileGuidance(hand, missingSuit, uid) {
     } else if (vals[1] - vals[0] === 2) {
       waits.push(vals[0] + 1);
     }
-    return { tile, status: "partial_run", waits, text: `Sequência parcial (${vals.join("-")} ${SUIT_LABEL[tile.suit]}). Falta comprar/reagir a: ${waits.map((v) => `${v} ${SUIT_LABEL[tile.suit]}`).join(" ou ")}.` };
+    return { tile, status: "partial_run", groupValues: vals, waits };
   }
   // Isolated: no group yet — list what would turn it into one.
-  const waits = [];
-  waits.push(tile.value); // pair
   const runWaits = [];
   if (tile.value - 2 >= 1) runWaits.push(tile.value - 2);
   if (tile.value - 1 >= 1) runWaits.push(tile.value - 1);
   if (tile.value + 1 <= 9) runWaits.push(tile.value + 1);
   if (tile.value + 2 <= 9) runWaits.push(tile.value + 2);
-  return {
-    tile, status: "isolated", waits: [...waits, ...runWaits],
-    text: `Peça isolada, ainda sem grupo. Vira Par se comprar/reagir a outra ${tile.value} ${SUIT_LABEL[tile.suit]}, ou entra numa sequência com peças próximas (${runWaits.join(", ")} ${SUIT_LABEL[tile.suit]}).`,
-  };
+  return { tile, status: "isolated", groupValues: [], waits: runWaits };
 }
 
 // Rough scoring-multiplier estimate for the current hand shape (Sichuan
 // mahjong style: 门清/碰碰胡/清一色/kong stack multiplicatively). This is an
 // ESTIMATE based on the greedy hand analysis, not a guarantee of the final
 // score — the engine itself only awards the win, it doesn't yet score fan.
+// notes is an array of i18n key strings (mahjong.multiplier.*), not text —
+// callers translate each via I18N.t().
 function estimateMultiplier(hand, revealed, missingSuit) {
   const analysis = analyzeHand(hand, missingSuit);
   const notes = [];
   let mult = 1;
   const hasChi = (revealed || []).some((m) => m.type === "chi");
   const hasRunShape = analysis.groups.some((g) => g.type === "run" || g.type === "partial_run");
-  if (!hasChi && !hasRunShape) { mult *= 2; notes.push("Pong Pong Hu (só trincas) ×2"); }
+  if (!hasChi && !hasRunShape) { mult *= 2; notes.push("mahjong.multiplier.pengpeng"); }
   const suitsUsed = new Set();
   hand.forEach((t) => suitsUsed.add(t.suit));
   (revealed || []).forEach((m) => suitsUsed.add(m.suit));
-  if (suitsUsed.size === 1) { mult *= 2; notes.push("Um naipe só (清一色) ×2"); }
-  if (!revealed || revealed.length === 0) { mult *= 2; notes.push("Mão fechada (门清) ×2"); }
+  if (suitsUsed.size === 1) { mult *= 2; notes.push("mahjong.multiplier.oneSuit"); }
+  if (!revealed || revealed.length === 0) { mult *= 2; notes.push("mahjong.multiplier.concealed"); }
   const kongCount = (revealed || []).filter((m) => m.type === "kong").length;
-  for (let i = 0; i < kongCount; i++) { mult *= 2; notes.push("Kong ×2"); }
+  for (let i = 0; i < kongCount; i++) { mult *= 2; notes.push("mahjong.multiplier.kong"); }
   return { mult, notes };
 }
 

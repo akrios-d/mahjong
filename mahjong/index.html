@@ -13,26 +13,27 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="back" href="../index.html">&larr; voltar</a>
-    <h1>Mahjong <span class="tag">online</span></h1>
+    <a class="back" href="../index.html" data-i18n="common.back">&larr; voltar</a>
+    <h1>Mahjong <span class="tag" data-i18n="landing.badge.online">online</span></h1>
+    <div class="lang-bar" id="langBar"></div>
     <div id="phaseLabel" class="phase">--</div>
   </header>
 
   <div id="lobby" class="lobby">
     <div class="lobby-box">
-      <h2>Entrar em uma sala</h2>
-      <label>Endereço do servidor
+      <h2 data-i18n="landlord.lobby.title">Entrar em uma sala</h2>
+      <label><span data-i18n="common.lobby.serverUrl">Endereço do servidor</span>
         <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
       </label>
-      <label>Código da sala
-        <input id="roomCode" type="text" placeholder="ex: MJ1" maxlength="12">
+      <label><span data-i18n="common.lobby.roomCode">Código da sala</span>
+        <input id="roomCode" type="text" data-i18n-placeholder="mahjong.lobby.roomCodePlaceholder" placeholder="ex: MJ1" maxlength="12">
       </label>
-      <label>Seu nome
-        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      <label><span data-i18n="common.lobby.playerName">Seu nome</span>
+        <input id="playerName" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
       </label>
-      <button id="connectBtn">Entrar online</button>
-      <button id="playLocalBtn" class="secondary">Jogar sozinho contra IA (sem servidor)</button>
-      <p class="hint">4 jogadores, 108 peças (Bambu, Bolinha, Caractere — sem
+      <button id="connectBtn" data-i18n="common.lobby.connect">Entrar online</button>
+      <button id="playLocalBtn" class="secondary" data-i18n="landlord.lobby.playLocal">Jogar sozinho contra IA (sem servidor)</button>
+      <p class="hint" data-i18n="mahjong.lobby.hint">4 jogadores, 108 peças (Bambu, Bolinha, Caractere — sem
         ventos/dragões). Cada um recebe 13 peças e escolhe um naipe para
         abandonar (Missing Suit). Vença fechando 4 grupos + 1 par usando só
         2 dos 3 naipes.</p>
@@ -42,7 +43,7 @@
 
   <div id="roomBar" class="room-bar hidden">
     <div class="seats-bar" id="seatsBar"></div>
-    <button id="startBtn" class="start-btn hidden">Começar com IA</button>
+    <button id="startBtn" class="start-btn hidden" data-i18n="common.startWithAI">Começar com IA</button>
   </div>
 
   <main id="table" class="table hidden">
@@ -69,11 +70,11 @@
       <div class="wall-count" id="wallCount"></div>
       <div class="discard-pile" id="discardPile"></div>
       <div id="missingSuitPanel" class="missing-suit-panel hidden">
-        <p>Escolha o naipe que você vai abandonar (Missing Suit):</p>
+        <p data-i18n="mahjong.missingSuit.prompt">Escolha o naipe que você vai abandonar (Missing Suit):</p>
         <div class="suit-buttons">
-          <button data-suit="bamboo">🎋 Bambu</button>
-          <button data-suit="dots">⚪ Bolinha</button>
-          <button data-suit="characters">字 Caractere</button>
+          <button data-suit="bamboo">🎋 <span data-i18n="mahjong.suit.bamboo">Bambu</span></button>
+          <button data-suit="dots">⚪ <span data-i18n="mahjong.suit.dots">Bolinha</span></button>
+          <button data-suit="characters">字 <span data-i18n="mahjong.suit.characters">Caractere</span></button>
         </div>
       </div>
       <div id="claimPanel" class="claim-panel hidden">
@@ -84,14 +85,14 @@
     </div>
 
     <div class="you">
-      <div class="name">Você <span class="meta" id="metaYou"></span></div>
+      <div class="name"><span data-i18n="common.you">Você</span> <span class="meta" id="metaYou"></span></div>
       <div class="revealed" id="revealedYou"></div>
       <div class="hand" id="handYou"></div>
       <div class="controls">
-        <button id="kongBtn" class="hidden">Kong oculto</button>
-        <button id="huBtn" class="hidden">Hu! (fechar mão)</button>
-        <button id="hintBtn">Sugerir descarte</button>
-        <button id="newHandBtn" class="hidden">Nova mão</button>
+        <button id="kongBtn" class="hidden" data-i18n="mahjong.controls.kong">Kong oculto</button>
+        <button id="huBtn" class="hidden" data-i18n="mahjong.controls.hu">Hu! (fechar mão)</button>
+        <button id="hintBtn" data-i18n="mahjong.controls.hint">Sugerir descarte</button>
+        <button id="newHandBtn" class="hidden" data-i18n="landlord.controls.newHand">Nova mão</button>
       </div>
     </div>
   </main>
@@ -100,10 +101,12 @@
     <div class="overlay-box">
       <h2 id="endTitle"></h2>
       <p id="endStats"></p>
-      <button id="playAgainBtn">Nova mão</button>
+      <button id="playAgainBtn" data-i18n="landlord.controls.newHand">Nova mão</button>
     </div>
   </div>
 
+  <script src="../shared/i18n.js"></script>
+  <script src="../shared/i18nDict.js"></script>
   <script src="../shared/mahjongRules.js"></script>
   <script src="../shared/roomUtils.js"></script>
   <script src="../shared/mahjongEngine.js"></script>

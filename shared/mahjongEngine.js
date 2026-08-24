@@ -15,7 +15,7 @@
   const SEAT_COUNT = 4;
 
   function update(room) { room.hooks.update(); }
-  function log(room, text) { RU.pushLog(room, text); }
+  function log(room, key, params) { RU.pushLog(room, key, params); }
 
   function revealedGroupCount(player) { return player.revealed.length; }
 
@@ -81,7 +81,7 @@
       winnerSeat: null, winType: null, winFromSeat: null,
       log: room.state ? room.state.log : [],
     };
-    log(room, `Mão ${room.state.roundNumber}: 13 peças distribuídas. Escolham o naipe a abandonar.`);
+    log(room, "mahjong.log.dealt", { round: room.state.roundNumber });
     update(room);
     // AI picks its missing suit immediately.
     room.seats.forEach((seat, i) => {
@@ -91,10 +91,10 @@
 
   function submitMissingSuit(room, seatIdx, suit) {
     const s = room.state;
-    if (s.phase !== "missingSuit") return { ok: false, error: "Fase errada." };
-    if (!MR.SUITS.includes(suit)) return { ok: false, error: "Naipe inválido." };
+    if (s.phase !== "missingSuit") return { ok: false, error: "mahjong.err.wrongPhase" };
+    if (!MR.SUITS.includes(suit)) return { ok: false, error: "mahjong.err.invalidSuit" };
     s.players[seatIdx].missingSuit = suit;
-    log(room, `${s.players[seatIdx].name} escolheu abandonar ${MR.SUIT_LABEL[suit]}.`);
+    log(room, "mahjong.log.chosenMissingSuit", { name: s.players[seatIdx].name, suit });
     if (s.players.every((p) => p.missingSuit)) startPlay(room);
     else update(room);
     return { ok: true };
@@ -104,7 +104,7 @@
     const s = room.state;
     s.phase = "playing";
     s.turnIdx = s.dealerIdx;
-    log(room, `${s.players[s.dealerIdx].name} é o dealer e compra a 1ª peça.`);
+    log(room, "mahjong.log.dealerDraws", { name: s.players[s.dealerIdx].name });
     drawForSeat(room, s.dealerIdx);
   }
 
@@ -148,24 +148,24 @@
 
   function submitSelfKong(room, seatIdx) {
     const s = room.state;
-    if (s.phase !== "playing" || s.awaitingDiscard !== seatIdx) return { ok: false, error: "Não é sua vez." };
+    if (s.phase !== "playing" || s.awaitingDiscard !== seatIdx) return { ok: false, error: "common.err.notYourTurn" };
     const player = s.players[seatIdx];
     const kong = MR.hasConcealedKong(player.hand);
-    if (!kong) return { ok: false, error: "Você não tem 4 peças iguais na mão." };
-    if (s.wall.length === 0) return { ok: false, error: "Não dá para declarar Kong: o monte está vazio, não há peça de reposição para comprar." };
+    if (!kong) return { ok: false, error: "mahjong.err.noConcealedKong" };
+    if (s.wall.length === 0) return { ok: false, error: "mahjong.err.kongEmptyWall" };
     player.hand = player.hand.filter((t) => !(t.suit === kong.suit && t.value === kong.value));
     player.revealed.push({ type: "kong", concealed: true, suit: kong.suit, value: kong.value, claimedFrom: null });
-    log(room, `${player.name} declarou Kong oculto (${kong.value} ${MR.SUIT_LABEL[kong.suit]}).`);
+    log(room, "mahjong.log.selfKong", { name: player.name, value: kong.value, suit: kong.suit });
     drawForSeat(room, seatIdx);
     return { ok: true };
   }
 
   function submitSelfHu(room, seatIdx) {
     const s = room.state;
-    if (s.phase !== "playing" || s.awaitingDiscard !== seatIdx) return { ok: false, error: "Não é sua vez." };
+    if (s.phase !== "playing" || s.awaitingDiscard !== seatIdx) return { ok: false, error: "common.err.notYourTurn" };
     const player = s.players[seatIdx];
     if (!MR.isWinningHand(player.hand, revealedGroupCount(player), player.missingSuit)) {
-      return { ok: false, error: "Sua mão ainda não é vencedora." };
+      return { ok: false, error: "mahjong.err.notWinning" };
     }
     endRoundWin(room, seatIdx, "zimo", null);
     return { ok: true };
@@ -173,14 +173,14 @@
 
   function submitDiscard(room, seatIdx, uid) {
     const s = room.state;
-    if (s.phase !== "playing" || s.awaitingDiscard !== seatIdx) return { ok: false, error: "Não é sua vez." };
+    if (s.phase !== "playing" || s.awaitingDiscard !== seatIdx) return { ok: false, error: "common.err.notYourTurn" };
     const player = s.players[seatIdx];
     const idx = player.hand.findIndex((t) => t.uid === uid);
-    if (idx === -1) return { ok: false, error: "Peça não encontrada na sua mão." };
+    if (idx === -1) return { ok: false, error: "mahjong.err.tileNotInHand" };
     const tile = player.hand.splice(idx, 1)[0];
     s.discardPile.push({ tile, fromSeat: seatIdx });
     s.awaitingDiscard = null;
-    log(room, `${player.name} descartou ${MR.tileLabel(tile)}.`);
+    log(room, "mahjong.log.discarded", { name: player.name, value: tile.value, suit: tile.suit });
 
     const eligible = computeClaimEligibility(room, seatIdx, tile);
     if (eligible.length === 0) {
@@ -230,14 +230,14 @@
 
   function submitClaimResponse(room, seatIdx, action, chiOption) {
     const s = room.state;
-    if (!s.pendingClaim) return { ok: false, error: "Nenhum descarte para reagir." };
+    if (!s.pendingClaim) return { ok: false, error: "mahjong.err.noPendingClaim" };
     const entry = s.pendingClaim.eligible.find((e) => e.seatIdx === seatIdx);
-    if (!entry) return { ok: false, error: "Você não pode reagir a esse descarte." };
-    if (Object.prototype.hasOwnProperty.call(s.pendingClaim.responses, seatIdx)) return { ok: false, error: "Você já respondeu." };
-    if (action === "hu" && !entry.canHu) return { ok: false, error: "Você não pode fechar com essa peça." };
-    if (action === "kong" && !entry.canKong) return { ok: false, error: "Você não pode fazer Kong." };
-    if (action === "pong" && !entry.canPong) return { ok: false, error: "Você não pode fazer Pong." };
-    if (action === "chi" && !entry.canChi.length) return { ok: false, error: "Você não pode fazer Chi." };
+    if (!entry) return { ok: false, error: "mahjong.err.cannotReact" };
+    if (Object.prototype.hasOwnProperty.call(s.pendingClaim.responses, seatIdx)) return { ok: false, error: "mahjong.err.alreadyResponded" };
+    if (action === "hu" && !entry.canHu) return { ok: false, error: "mahjong.err.cannotHu" };
+    if (action === "kong" && !entry.canKong) return { ok: false, error: "mahjong.err.cannotKong" };
+    if (action === "pong" && !entry.canPong) return { ok: false, error: "mahjong.err.cannotPong" };
+    if (action === "chi" && !entry.canChi.length) return { ok: false, error: "mahjong.err.cannotChi" };
     s.pendingClaim.responses[seatIdx] = { action, chiOption };
 
     if (action === "hu") { resolveClaim(room); return { ok: true }; }
@@ -275,7 +275,7 @@
     if (winning.action === "kong") {
       claimant.hand = removeN(claimant.hand, pc.tile, 3);
       claimant.revealed.push({ type: "kong", concealed: false, suit: pc.tile.suit, value: pc.tile.value, claimedFrom: pc.fromSeat });
-      log(room, `${claimant.name} fez Kong com o descarte.`);
+      log(room, "mahjong.log.claimedKong", { name: claimant.name });
       s.pendingClaim = null;
       s.turnIdx = winning.seatIdx;
       drawForSeat(room, winning.seatIdx);
@@ -284,14 +284,14 @@
     if (winning.action === "pong") {
       claimant.hand = removeN(claimant.hand, pc.tile, 2);
       claimant.revealed.push({ type: "pong", concealed: false, suit: pc.tile.suit, value: pc.tile.value, claimedFrom: pc.fromSeat });
-      log(room, `${claimant.name} fez Pong com o descarte.`);
+      log(room, "mahjong.log.claimedPong", { name: claimant.name });
     } else {
       const fallbackOpt = pc.eligible.find((e) => e.seatIdx === winning.seatIdx).canChi[0];
       const use = winning.chiOption || fallbackOpt;
       claimant.hand = removeOne(claimant.hand, pc.tile.suit, use[0]);
       claimant.hand = removeOne(claimant.hand, pc.tile.suit, use[1]);
       claimant.revealed.push({ type: "chi", concealed: false, suit: pc.tile.suit, values: [use[0], use[1], pc.tile.value].sort((x, y) => x - y), claimedFrom: pc.fromSeat });
-      log(room, `${claimant.name} fez Chi com o descarte.`);
+      log(room, "mahjong.log.claimedChi", { name: claimant.name });
     }
     s.pendingClaim = null;
     s.turnIdx = winning.seatIdx;
@@ -327,7 +327,7 @@
     s.winnerSeat = seatIdx;
     s.winType = winType;
     s.winFromSeat = fromSeat;
-    log(room, `${s.players[seatIdx].name} fechou a mão (${winType === "zimo" ? "compra própria" : "no descarte"})! Hu!`);
+    log(room, "mahjong.log.hu", { name: s.players[seatIdx].name, winType });
     update(room);
   }
 
@@ -336,7 +336,7 @@
     s.phase = "roundEnd";
     s.winnerSeat = null;
     s.winType = "wall-empty";
-    log(room, "O monte acabou sem ninguém fechar a mão.");
+    log(room, "mahjong.log.wallEmpty");
     update(room);
   }
 

@@ -3,6 +3,10 @@
 const MR = window.MahjongRules;
 const RU = window.RoomUtils;
 const MJE = window.MahjongEngine;
+const I18N = window.I18N;
+
+function suitLabelI18n(suit) { return I18N.t("mahjong.suit." + suit); }
+function tileLabelI18n(t) { return `${t.value} ${suitLabelI18n(t.suit)}`; }
 
 let ws = null;
 let mode = null; // "online" | "local"
@@ -63,6 +67,9 @@ els.serverUrl.value = defaultServerUrl();
 els.roomCode.value = "MJ1";
 els.playerName.value = "Jogador" + Math.floor(Math.random() * 900 + 100);
 
+I18N.applyStaticI18n();
+I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });
+
 function setLobbyError(msg) { els.lobbyError.textContent = msg || ""; }
 function setMessage(txt) { els.message.textContent = txt; }
 
@@ -81,7 +88,7 @@ function send(obj) {
     else if (obj.type === "selfKong") result = MJE.submitSelfKong(localRoom, 0);
     else if (obj.type === "selfHu") result = MJE.submitSelfHu(localRoom, 0);
     else if (obj.type === "claimResponse") result = MJE.submitClaimResponse(localRoom, 0, obj.action, obj.chiOption);
-    if (result && !result.ok) setMessage("Erro: " + result.error);
+    if (result && !result.ok) setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(result.error));
   }
 }
 
@@ -93,16 +100,16 @@ function connect() {
   const room = els.roomCode.value.trim() || "MJ1";
   const name = els.playerName.value.trim() || "Jogador";
   mode = "online";
-  setLobbyError("Conectando...");
-  try { ws = new WebSocket(url); } catch (e) { setLobbyError("Endereço inválido: " + e.message); return; }
+  setLobbyError(I18N.t("common.lobby.connecting"));
+  try { ws = new WebSocket(url); } catch (e) { setLobbyError(I18N.t("common.lobby.invalidAddress", { error: e.message })); return; }
 
   ws.addEventListener("open", () => ws.send(JSON.stringify({ type: "join", game: "mahjong", room, name })));
-  ws.addEventListener("close", () => setLobbyError("Conexão perdida com o servidor."));
-  ws.addEventListener("error", () => setLobbyError("Não foi possível conectar ao servidor."));
+  ws.addEventListener("close", () => setLobbyError(I18N.t("common.lobby.connectionLost")));
+  ws.addEventListener("error", () => setLobbyError(I18N.t("common.lobby.connectFailed")));
   ws.addEventListener("message", (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.type === "joined") { mySeat = msg.seatIdx; showTable(); return; }
-    if (msg.type === "error") { setMessage("Erro: " + msg.message); return; }
+    if (msg.type === "error") { setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(msg.message)); return; }
     if (msg.type === "state") { latest = msg.state; render(); }
   });
 }
@@ -140,30 +147,45 @@ let handHintTimer = null;
 let tileInspectActive = false;
 let tileInspectTimer = null;
 
+function tileGuidanceText(guidance) {
+  const g = guidance;
+  if (g.status === "triplet") return I18N.t("mahjong.tileInfo.triplet", { values: g.groupValues.join("-"), suit: suitLabelI18n(g.tile.suit) });
+  if (g.status === "run") return I18N.t("mahjong.tileInfo.run", { values: g.groupValues.join("-"), suit: suitLabelI18n(g.tile.suit) });
+  if (g.status === "pair") return I18N.t("mahjong.tileInfo.pair", { value: g.tile.value, suit: suitLabelI18n(g.tile.suit) });
+  if (g.status === "partial_run") {
+    const waits = g.waits.map((v) => `${v} ${suitLabelI18n(g.tile.suit)}`).join(I18N.t("mahjong.tileInfo.or"));
+    return I18N.t("mahjong.tileInfo.partialRun", { values: g.groupValues.join("-"), suit: suitLabelI18n(g.tile.suit), waits });
+  }
+  return I18N.t("mahjong.tileInfo.isolated", { value: g.tile.value, suit: suitLabelI18n(g.tile.suit), waits: g.waits.join(", ") });
+}
+
 function showTileInspector(uid) {
   if (!latest || mySeat < 0) return;
   const me = latest.players[mySeat];
   const guidance = MR.tileGuidance(me.hand, me.missingSuit, uid);
   if (!guidance) return;
   const { mult, notes } = MR.estimateMultiplier(me.hand, me.revealed, me.missingSuit);
-  const multText = notes.length ? `Multiplicador estimado se fechar com essa cara: ×${mult} (${notes.join(", ")}).` : `Multiplicador estimado: ×${mult} (sem bônus especial ainda).`;
-  setMessage(`${guidance.text} ${multText}`);
+  const noteText = notes.map((k) => I18N.t(k)).join(", ");
+  const multText = notes.length
+    ? I18N.t("mahjong.multiplier.withNotes", { mult, notes: noteText })
+    : I18N.t("mahjong.multiplier.none", { mult });
+  setMessage(`${tileGuidanceText(guidance)} ${multText}`);
   tileInspectActive = true;
   clearTimeout(tileInspectTimer);
   tileInspectTimer = setTimeout(() => { tileInspectActive = false; render(); }, 7000);
 }
 
 els.hintBtn.addEventListener("click", () => {
-  if (!latest || latest.awaitingDiscard !== mySeat) { setMessage("Só dá pra sugerir na sua vez de descartar."); return; }
+  if (!latest || latest.awaitingDiscard !== mySeat) { setMessage(I18N.t("mahjong.hint.onlyOnTurn")); return; }
   const me = latest.players[mySeat];
   const analysis = MR.analyzeHand(me.hand, me.missingSuit);
   const groupUids = new Map();
-  analysis.groups.forEach((g) => g.tiles.forEach((t) => groupUids.set(t.uid, MR.GROUP_LABELS[g.type])));
+  analysis.groups.forEach((g) => g.tiles.forEach((t) => groupUids.set(t.uid, I18N.t("mahjong.group." + g.type))));
   handHint = { groupUids, discardUid: analysis.discardSuggestion.uid };
   const groupSummary = analysis.groups.length
-    ? analysis.groups.map((g) => `${MR.GROUP_LABELS[g.type]} (${g.tiles.map((t) => MR.tileLabel(t)).join(", ")})`).join(" · ")
-    : "nenhum grupo formado ainda";
-  setMessage(`Sugestão: descarte ${MR.tileLabel(analysis.discardSuggestion)}. Você já tem: ${groupSummary}.`);
+    ? analysis.groups.map((g) => `${I18N.t("mahjong.group." + g.type)} (${g.tiles.map((t) => tileLabelI18n(t)).join(", ")})`).join(" · ")
+    : I18N.t("mahjong.hint.noGroupsYet");
+  setMessage(I18N.t("mahjong.hint.suggestion", { tile: tileLabelI18n(analysis.discardSuggestion), groups: groupSummary }));
   clearTimeout(handHintTimer);
   handHintTimer = setTimeout(() => { handHint = null; render(); }, 6000);
   render();
@@ -171,9 +193,9 @@ els.hintBtn.addEventListener("click", () => {
 
 /* ---------------- rendering ---------------- */
 function seatLabel(i) {
-  if (!latest) return `Assento ${i + 1}`;
-  if (i === mySeat) return "Você";
-  return (latest.seats[i] && latest.seats[i].name) || `Assento ${i + 1}`;
+  if (!latest) return I18N.t("common.seat", { n: i + 1 });
+  if (i === mySeat) return I18N.t("common.you");
+  return (latest.seats[i] && latest.seats[i].name) || I18N.t("common.seat", { n: i + 1 });
 }
 function relativeSeats() { return { right: (mySeat + 1) % 4, top: (mySeat + 2) % 4, left: (mySeat + 3) % 4 }; }
 
@@ -182,7 +204,7 @@ function renderTile(tile, opts) {
   const el = document.createElement("div");
   el.className = "mtile" + (opts.small ? " small" : "") + (opts.static ? " static" : "") + (opts.disabled ? " disabled" : "");
   el.textContent = MR.tileGlyph(tile);
-  el.title = MR.tileLabel(tile);
+  el.title = tileLabelI18n(tile);
   if (tile.uid !== undefined) el.dataset.uid = tile.uid;
   if (opts.onClick) el.addEventListener("click", opts.onClick);
   return el;
@@ -200,10 +222,10 @@ function renderMeld(meld) {
 
 function render() {
   if (!latest) return;
-  els.phase.textContent = !latest.started ? "Aguardando jogadores..."
-    : latest.phase === "missingSuit" ? "Escolhendo naipe a abandonar"
-    : latest.phase === "playing" ? "Em jogo"
-    : "Mão encerrada";
+  els.phase.textContent = !latest.started ? I18N.t("common.phase.waiting")
+    : latest.phase === "missingSuit" ? I18N.t("mahjong.phase.missingSuit")
+    : latest.phase === "playing" ? I18N.t("common.phase.playing")
+    : I18N.t("common.phase.roundEnd");
 
   renderSeatsBar();
 
@@ -216,17 +238,17 @@ function render() {
   renderSide("Left", left, players[left]);
   renderSide("Right", right, players[right]);
 
-  els.wallCount.textContent = `Monte: ${latest.wallCount} peças`;
+  els.wallCount.textContent = I18N.t("mahjong.wallCount", { n: latest.wallCount });
   els.discardPile.innerHTML = "";
   for (const d of latest.discardPile) {
     const el = renderTile(d.tile, { static: true, small: true });
     el.style.opacity = "0.85";
-    el.title += ` (descarte de ${seatLabel(d.fromSeat)})`;
+    el.title += ` (${I18N.t("mahjong.discardedBy", { name: seatLabel(d.fromSeat) })})`;
     els.discardPile.appendChild(el);
   }
 
   const me = players[mySeat];
-  els.metaYou.textContent = me.missingSuit ? `(sem ${MR.SUIT_LABEL[me.missingSuit]})` : "";
+  els.metaYou.textContent = me.missingSuit ? I18N.t("mahjong.missingSuitParen", { suit: suitLabelI18n(me.missingSuit) }) : "";
   els.revealedYou.innerHTML = "";
   (me.revealed || []).forEach((m) => els.revealedYou.appendChild(renderMeld(m)));
 
@@ -248,14 +270,14 @@ function render() {
     });
     if (me.missingSuit && t.suit === me.missingSuit) el.classList.add("missing-suit");
     if (handHint) {
-      if (t.uid === handHint.discardUid) { el.classList.add("discard-suggest"); el.title += " — sugestão de descarte"; }
+      if (t.uid === handHint.discardUid) { el.classList.add("discard-suggest"); el.title += ` — ${I18N.t("mahjong.discardSuggestion")}`; }
       else if (handHint.groupUids.has(t.uid)) { el.classList.add("keep"); el.title += ` — ${handHint.groupUids.get(t.uid)}`; }
     }
     if (canInspect) {
       const badge = document.createElement("div");
       badge.className = "inspect-badge";
       badge.textContent = "?";
-      badge.title = "Ver combinações possíveis para essa peça";
+      badge.title = I18N.t("mahjong.inspect.title");
       badge.addEventListener("click", (ev) => {
         ev.stopPropagation();
         showTileInspector(t.uid);
@@ -270,9 +292,9 @@ function render() {
   els.newHandBtn.classList.toggle("hidden", latest.phase !== "roundEnd");
 
   if (latest.phase === "playing" && !handHint && !tileInspectActive) {
-    if (myTurnToDiscard) setMessage("Sua vez: escolha uma peça para descartar (ou Kong/Hu, se disponível).");
-    else if (latest.pendingClaim) setMessage(`${seatLabel(latest.pendingClaim.fromSeat)} descartou ${MR.tileLabel(latest.pendingClaim.tile)}. Aguardando reações...`);
-    else setMessage(`Vez de ${seatLabel(latest.turnIdx)}.`);
+    if (myTurnToDiscard) setMessage(I18N.t("mahjong.turn.discard"));
+    else if (latest.pendingClaim) setMessage(I18N.t("mahjong.claim.waiting", { name: seatLabel(latest.pendingClaim.fromSeat), tile: tileLabelI18n(latest.pendingClaim.tile) }));
+    else setMessage(I18N.t("common.turnOf", { name: seatLabel(latest.turnIdx) }));
   }
 
   if (latest.pendingClaim && latest.pendingClaim.youEligible && !latest.pendingClaim.youResponded) {
@@ -282,12 +304,12 @@ function render() {
   if (latest.phase === "roundEnd") {
     els.endOverlay.classList.remove("hidden");
     if (latest.winnerSeat === null) {
-      els.endTitle.textContent = "Mão encerrada sem vencedor";
-      els.endStats.textContent = "O monte acabou antes de alguém fechar a mão.";
+      els.endTitle.textContent = I18N.t("mahjong.roundEnd.noWinnerTitle");
+      els.endStats.textContent = I18N.t("mahjong.roundEnd.noWinnerStats");
     } else {
       const won = latest.winnerSeat === mySeat;
-      els.endTitle.textContent = won ? "Você fechou a mão! Hu! 🎉" : `${seatLabel(latest.winnerSeat)} fechou a mão!`;
-      els.endStats.textContent = latest.winType === "zimo" ? "Vitória por compra própria (zimo)." : `Vitória no descarte de ${seatLabel(latest.winFromSeat)}.`;
+      els.endTitle.textContent = won ? I18N.t("mahjong.roundEnd.youWonTitle") : I18N.t("mahjong.roundEnd.wonByTitle", { name: seatLabel(latest.winnerSeat) });
+      els.endStats.textContent = latest.winType === "zimo" ? I18N.t("mahjong.roundEnd.zimo") : I18N.t("mahjong.roundEnd.fromDiscard", { name: seatLabel(latest.winFromSeat) });
     }
   } else {
     els.endOverlay.classList.add("hidden");
@@ -296,7 +318,7 @@ function render() {
 
 function renderSide(pos, seatIdx, player) {
   els[`name${pos}`].textContent = seatLabel(seatIdx);
-  els[`meta${pos}`].textContent = player.missingSuit ? `sem ${MR.SUIT_LABEL[player.missingSuit]}` : (player.hasChosenMissingSuit ? "escolheu naipe" : "");
+  els[`meta${pos}`].textContent = player.missingSuit ? I18N.t("mahjong.missingSuitPlain", { suit: suitLabelI18n(player.missingSuit) }) : (player.hasChosenMissingSuit ? I18N.t("mahjong.chosenSuit") : "");
   els[`revealed${pos}`].innerHTML = "";
   (player.revealed || []).forEach((m) => els[`revealed${pos}`].appendChild(renderMeld(m)));
   els[`hand${pos}`].innerHTML = Array.from({ length: player.handCount }, () => `<div class="card-back"></div>`).join("");
@@ -306,7 +328,7 @@ function renderClaimPanel() {
   const pc = latest.pendingClaim;
   const opts = pc.youOptions;
   els.claimPanel.classList.remove("hidden");
-  els.claimPrompt.textContent = `${seatLabel(pc.fromSeat)} descartou ${MR.tileLabel(pc.tile)}. O que você faz?`;
+  els.claimPrompt.textContent = I18N.t("mahjong.claim.prompt", { name: seatLabel(pc.fromSeat), tile: tileLabelI18n(pc.tile) });
   els.claimButtons.innerHTML = "";
   const addBtn = (label, onClick) => {
     const b = document.createElement("button");
@@ -314,13 +336,13 @@ function renderClaimPanel() {
     b.addEventListener("click", onClick);
     els.claimButtons.appendChild(b);
   };
-  if (opts.canHu) addBtn("Hu! (fechar)", () => send({ type: "claimResponse", action: "hu" }));
-  if (opts.canKong) addBtn("Kong", () => send({ type: "claimResponse", action: "kong" }));
-  if (opts.canPong) addBtn("Pong", () => send({ type: "claimResponse", action: "pong" }));
+  if (opts.canHu) addBtn(I18N.t("mahjong.claim.hu"), () => send({ type: "claimResponse", action: "hu" }));
+  if (opts.canKong) addBtn(I18N.t("mahjong.claim.kong"), () => send({ type: "claimResponse", action: "kong" }));
+  if (opts.canPong) addBtn(I18N.t("mahjong.claim.pong"), () => send({ type: "claimResponse", action: "pong" }));
   (opts.canChi || []).forEach((combo) => {
-    addBtn(`Chi (${combo[0]}-${combo[1]}-${pc.tile.value})`, () => send({ type: "claimResponse", action: "chi", chiOption: combo }));
+    addBtn(I18N.t("mahjong.claim.chi", { a: combo[0], b: combo[1], c: pc.tile.value }), () => send({ type: "claimResponse", action: "chi", chiOption: combo }));
   });
-  addBtn("Passar", () => send({ type: "claimResponse", action: "pass" }));
+  addBtn(I18N.t("landlord.bid.pass"), () => send({ type: "claimResponse", action: "pass" }));
 }
 
 function renderSeatsBar() {
@@ -330,8 +352,8 @@ function renderSeatsBar() {
     chip.className = "seat-chip";
     if (i === mySeat) chip.classList.add("you");
     if (s.isAI) chip.classList.add("ai");
-    const status = s.name ? (s.isAI ? `${s.name} (IA)` : s.connected ? s.name : `${s.name} (offline)`) : "vazio";
-    chip.textContent = `Assento ${i + 1}: ${status}`;
+    const status = s.name ? (s.isAI ? I18N.t("common.seat.ai", { name: s.name }) : s.connected ? s.name : I18N.t("common.seat.offline", { name: s.name })) : I18N.t("common.seat.empty");
+    chip.textContent = I18N.t("common.seat.chip", { n: i + 1, status });
     els.seatsBar.appendChild(chip);
   });
 }

@@ -171,15 +171,15 @@ html, body {
 }
 .domino-tile.static { cursor: default; }
 .domino-tile .half {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   padding: 3px;
   gap: 1px;
 }
-.board-chain .domino-tile .half { width: 28px; height: 28px; padding: 2px; }
+.board-chain .domino-tile .half { width: 26px; height: 26px; padding: 2px; }
 .board-chain .domino-tile { flex-shrink: 0; }
 .domino-tile .divider { width: 2px; background: #8a7343; }
 .domino-tile.vertical .divider { width: 100%; height: 2px; }
@@ -236,13 +236,13 @@ html, body {
   .board-felt { min-height: auto; padding: 14px 10px; border-radius: 16px; }
   .hand-back .card-back { width: 20px; height: 34px; }
   .hand-back.vertical .card-back { width: 26px; height: 18px; }
-  .domino-tile .half { width: 24px; height: 24px; padding: 2px; }
-  .board-chain .domino-tile .half { width: 21px; height: 21px; padding: 1px; }
+  .domino-tile .half { width: 19px; height: 19px; padding: 2px; }
+  .board-chain .domino-tile .half { width: 19px; height: 19px; padding: 1px; }
   .hand { gap: 4px; }
 }
 @media (max-width: 420px) {
-  .domino-tile .half { width: 20px; height: 20px; padding: 2px; }
-  .board-chain .domino-tile .half { width: 18px; height: 18px; padding: 1px; }
+  .domino-tile .half { width: 16px; height: 16px; padding: 2px; }
+  .board-chain .domino-tile .half { width: 16px; height: 16px; padding: 1px; }
 }
 
 /* Phones held sideways: height is the tight dimension, not width, so this
@@ -273,8 +273,8 @@ html, body {
   .hand-back .card-back { width: 16px; height: 26px; }
   .hand-back.vertical { flex-direction: row; flex-wrap: wrap; justify-content: center; }
   .hand-back.vertical .card-back { width: 14px; height: 20px; }
-  .domino-tile .half { width: 16px; height: 16px; padding: 1px; }
-  .board-chain .domino-tile .half { width: 15px; height: 15px; padding: 1px; }
+  .domino-tile .half { width: 14px; height: 14px; padding: 1px; }
+  .board-chain .domino-tile .half { width: 14px; height: 14px; padding: 1px; }
   .morto, .message, .last-batida { font-size: 0.7rem; min-height: 1em; margin: 0; }
   .hand { gap: 3px; min-height: 44px; }
   .controls { gap: 6px; }
@@ -309,8 +309,8 @@ html[data-force-landscape] .board-felt { min-height: auto; padding: 8px 6px; bor
 html[data-force-landscape] .hand-back .card-back { width: 16px; height: 26px; }
 html[data-force-landscape] .hand-back.vertical { flex-direction: row; flex-wrap: wrap; justify-content: center; }
 html[data-force-landscape] .hand-back.vertical .card-back { width: 14px; height: 20px; }
-html[data-force-landscape] .domino-tile .half { width: 16px; height: 16px; padding: 1px; }
-html[data-force-landscape] .board-chain .domino-tile .half { width: 15px; height: 15px; padding: 1px; }
+html[data-force-landscape] .domino-tile .half { width: 14px; height: 14px; padding: 1px; }
+html[data-force-landscape] .board-chain .domino-tile .half { width: 14px; height: 14px; padding: 1px; }
 html[data-force-landscape] .morto, html[data-force-landscape] .message, html[data-force-landscape] .last-batida { font-size: 0.7rem; min-height: 1em; margin: 0; }
 html[data-force-landscape] .hand { gap: 3px; min-height: 44px; }
 html[data-force-landscape] .controls { gap: 6px; }

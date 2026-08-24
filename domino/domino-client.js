@@ -224,11 +224,15 @@ function renderTile(tile, opts) {
   el.className = "domino-tile" + (opts.static ? " static" : "") + (tile.a === tile.b ? " double" : "");
   if (opts.selected) el.classList.add("selected");
   if (opts.disabled) el.classList.add("disabled");
-  el.appendChild(renderHalf(tile.a));
   const divider = document.createElement("div");
   divider.className = "divider";
+  // flip only changes which half renders on which side (for a
+  // right-to-left board row) — it never changes the pip values.
+  const first = opts.flip ? tile.b : tile.a;
+  const second = opts.flip ? tile.a : tile.b;
+  el.appendChild(renderHalf(first));
   el.appendChild(divider);
-  el.appendChild(renderHalf(tile.b));
+  el.appendChild(renderHalf(second));
   if (opts.onClick) el.addEventListener("click", opts.onClick);
   return el;
 }
@@ -254,9 +258,16 @@ function layoutSnake(chain, cols) {
     // On the final level (no outgoing corner), don't pad out to full
     // capacity — there may be fewer tiles left than columns available.
     const normalCount = outgoing ? cols - reservedLeft - reservedRight : remaining;
-    const startCol = reservedLeft;
+    // Rows read screen-left-to-right (dir=+1) normally, but right-to-left
+    // (dir=-1) when they're continuing from a corner on the right edge —
+    // tiles must start adjacent to that corner and work back across the
+    // row, or the chain jumps across the row instead of flowing
+    // continuously. flip mirrors which half of the tile faces which way
+    // so matching pips still touch at each junction.
+    const dir = incoming === "right" ? -1 : 1;
+    const startColActual = dir === 1 ? reservedLeft : cols - 1 - reservedRight;
     for (let k = 0; k < normalCount; k++) {
-      items.push({ tile: chain[idx], col: startCol + k, level, vertical: false });
+      items.push({ tile: chain[idx], col: startColActual + k * dir, level, vertical: false, flip: dir === -1 });
       idx++;
     }
     if (!outgoing) break;
@@ -299,8 +310,8 @@ function renderBoardChain(chain) {
   // across rows stays exact. A vertical tile is narrower than a column,
   // so it's centered within its slot rather than pinned to a raw edge.
   let contentWidth = 0;
-  items.forEach(({ tile, col, level, vertical }) => {
-    const el = renderTile(tile, { static: true });
+  items.forEach(({ tile, col, level, vertical, flip }) => {
+    const el = renderTile(tile, { static: true, flip });
     const colX = col * colWidth;
     if (vertical) {
       el.classList.add("vertical");

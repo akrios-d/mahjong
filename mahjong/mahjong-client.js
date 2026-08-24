@@ -191,6 +191,16 @@ els.hintBtn.addEventListener("click", () => {
   render();
 });
 
+// Keeps tiles you're abandoning (missing suit) up front, on the left, so
+// the ones you'll be discarding are the easiest to spot/reach — the rest
+// keep the server's original (suit, value) order.
+function sortHandForDisplay(hand, missingSuit) {
+  if (!missingSuit) return hand;
+  const missing = hand.filter((t) => t.suit === missingSuit);
+  const rest = hand.filter((t) => t.suit !== missingSuit);
+  return [...missing, ...rest];
+}
+
 /* ---------------- rendering ---------------- */
 function seatLabel(i) {
   if (!latest) return I18N.t("common.seat", { n: i + 1 });
@@ -258,7 +268,8 @@ function render() {
   els.handYou.innerHTML = "";
   const myTurnToDiscard = latest.phase === "playing" && latest.awaitingDiscard === mySeat;
   const canInspect = latest.phase === "playing";
-  for (const t of (me.hand || [])) {
+  const handOrdered = sortHandForDisplay(me.hand || [], me.missingSuit);
+  for (const t of handOrdered) {
     const el = renderTile(t, {
       disabled: !myTurnToDiscard,
       onClick: () => {
@@ -273,15 +284,20 @@ function render() {
       if (t.uid === handHint.discardUid) { el.classList.add("discard-suggest"); el.title += ` — ${I18N.t("mahjong.discardSuggestion")}`; }
       else if (handHint.groupUids.has(t.uid)) { el.classList.add("keep"); el.title += ` — ${handHint.groupUids.get(t.uid)}`; }
     }
-    if (canInspect) {
+    // No inspector on tiles you're already abandoning (missing suit) — their
+    // fate is obvious, so skip the extra badge to reduce clutter/mis-taps.
+    if (canInspect && !(me.missingSuit && t.suit === me.missingSuit)) {
       const badge = document.createElement("div");
       badge.className = "inspect-badge";
       badge.textContent = "?";
       badge.title = I18N.t("mahjong.inspect.title");
-      badge.addEventListener("click", (ev) => {
+      const openInspector = (ev) => {
+        ev.preventDefault();
         ev.stopPropagation();
         showTileInspector(t.uid);
-      });
+      };
+      badge.addEventListener("click", openInspector);
+      badge.addEventListener("touchend", openInspector);
       el.appendChild(badge);
     }
     els.handYou.appendChild(el);

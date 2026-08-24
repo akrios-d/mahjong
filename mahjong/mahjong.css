@@ -106,13 +106,16 @@ html, body {
   position: relative;
 }
 .inspect-badge {
-  position: absolute; top: -6px; right: -6px;
-  width: 16px; height: 16px; border-radius: 50%;
+  position: absolute; top: -8px; left: -8px; z-index: 2;
+  width: 20px; height: 20px; border-radius: 50%;
   background: #2b5c48; color: #cfe; border: 1px solid #4ec97d;
-  font-size: 10px; font-weight: bold; line-height: 14px; text-align: center;
-  cursor: pointer; user-select: none;
+  font-size: 11px; font-weight: bold; line-height: 18px; text-align: center;
+  cursor: pointer; user-select: none; touch-action: manipulation;
 }
 .inspect-badge:hover { background: #35735a; }
+@media (max-width: 700px) {
+  .inspect-badge { width: 22px; height: 22px; line-height: 20px; font-size: 12px; top: -9px; left: -9px; }
+}
 .mtile.small { width: 26px; height: 36px; font-size: 17px; border-radius: 4px; }
 .mtile.static { cursor: default; }
 .mtile.disabled { cursor: default; }

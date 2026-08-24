@@ -135,12 +135,18 @@
       return;
     }
     s.phase = "handEnd";
-    if (typeof winnerSeat === "number") {
-      s.pendingHandEnd = { nextStarterSeat: winnerSeat };
-    } else {
-      s.pendingHandEnd = { needsTeamPick: true, winningTeam: result.winningTeam, teammates: teammateSeats(result.winningTeam), picks: {}, agreedStarter: null };
-      scheduleAIStarterPicks(room);
-    }
+    // The winning team always votes on who starts next, whether the win
+    // was a clean batida (single known winner) or a blocked-board tie
+    // decided by pip count (no single winner). If they can't agree after
+    // 3 tries, whoever won this hand (or the lower-numbered teammate, for
+    // a blocked hand with no individual winner) starts by default.
+    const teammates = teammateSeats(result.winningTeam);
+    const fallbackSeat = typeof winnerSeat === "number" ? winnerSeat : teammates[0];
+    s.pendingHandEnd = {
+      needsTeamPick: true, winningTeam: result.winningTeam, teammates,
+      picks: {}, agreedStarter: null, attempts: 0, fallbackSeat,
+    };
+    scheduleAIStarterPicks(room);
     update(room);
   }
 
@@ -153,7 +159,7 @@
       if (!room.seats[seatIdx] || !room.seats[seatIdx].isAI) return;
       setTimeout(() => {
         const s = room.state;
-        if (!s || s.pendingHandEnd !== pendingRef) return;
+        if (!s || s.pendingHandEnd !== pendingRef || pendingRef.agreedStarter != null) return;
         submitPickStarter(room, seatIdx, pendingRef.teammates[0]);
       }, 600 + Math.random() * 400);
     });
@@ -183,12 +189,22 @@
     const p = s.pendingHandEnd;
     if (!p.teammates.includes(seatIdx)) return { ok: false, error: "domino.err.notOnWinningTeam" };
     if (!p.teammates.includes(chosenSeat)) return { ok: false, error: "domino.err.invalidStarterChoice" };
+    if (p.agreedStarter != null) return { ok: true }; // already settled, ignore late picks
     p.picks[seatIdx] = chosenSeat;
     const [a, b] = p.teammates;
-    if (Object.prototype.hasOwnProperty.call(p.picks, a) && Object.prototype.hasOwnProperty.call(p.picks, b) && p.picks[a] === p.picks[b]) {
-      p.agreedStarter = p.picks[a];
-    } else {
-      p.agreedStarter = null;
+    if (Object.prototype.hasOwnProperty.call(p.picks, a) && Object.prototype.hasOwnProperty.call(p.picks, b)) {
+      if (p.picks[a] === p.picks[b]) {
+        p.agreedStarter = p.picks[a];
+      } else {
+        p.attempts++;
+        if (p.attempts >= 3) {
+          p.agreedStarter = p.fallbackSeat;
+          p.autoDecided = true;
+        } else {
+          p.picks = {};
+          scheduleAIStarterPicks(room);
+        }
+      }
     }
     update(room);
     return { ok: true };

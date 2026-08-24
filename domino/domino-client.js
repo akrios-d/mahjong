@@ -93,6 +93,19 @@ if (!ServerConfig.get()) {
 I18N.applyStaticI18n();
 I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });
 
+const landscapeToggleBtn = document.getElementById("landscapeToggleBtn");
+function applyForceLandscape(on) {
+  document.documentElement.toggleAttribute("data-force-landscape", on);
+  landscapeToggleBtn.classList.toggle("active", on);
+  landscapeToggleBtn.setAttribute("aria-pressed", String(on));
+}
+applyForceLandscape(localStorage.getItem("domino.forceLandscape") === "1");
+landscapeToggleBtn.addEventListener("click", () => {
+  const on = !document.documentElement.hasAttribute("data-force-landscape");
+  applyForceLandscape(on);
+  localStorage.setItem("domino.forceLandscape", on ? "1" : "0");
+});
+
 function setLobbyError(msg) { els.lobbyError.textContent = msg || ""; }
 function setMessage(txt) { els.message.textContent = txt; }
 
@@ -250,9 +263,10 @@ function renderBoardChain(chain) {
   for (let i = 0; i < chain.length; i += perRow) {
     let rowTiles = chain.slice(i, i + perRow);
     const rowIndex = i / perRow;
-    if (rowIndex % 2 === 1) rowTiles = [...rowTiles].reverse();
+    const reversed = rowIndex % 2 === 1;
+    if (reversed) rowTiles = [...rowTiles].reverse();
     const rowEl = document.createElement("div");
-    rowEl.className = "board-row";
+    rowEl.className = reversed ? "board-row reversed" : "board-row";
     rowTiles.forEach((t) => rowEl.appendChild(renderTile(t, { static: true })));
     els.boardChain.appendChild(rowEl);
   }
@@ -389,10 +403,17 @@ function renderHandEndPanel() {
     addPickBtn(I18N.t("domino.starterPick.partner", { name: seatLabel(partnerSeat) }), partnerSeat);
 
     const partnerPick = p.picks[partnerSeat];
-    if (myPick === undefined) els.starterPickStatus.textContent = I18N.t("domino.starterPick.waitingYou");
-    else if (partnerPick === undefined) els.starterPickStatus.textContent = I18N.t("domino.starterPick.waitingPartner");
-    else if (myPick === partnerPick) els.starterPickStatus.textContent = I18N.t("domino.starterPick.agreed", { name: seatLabel(myPick) });
-    else els.starterPickStatus.textContent = I18N.t("domino.starterPick.mismatch");
+    if (p.agreedStarter != null) {
+      els.starterPickStatus.textContent = p.autoDecided
+        ? I18N.t("domino.starterPick.autoDecided", { name: seatLabel(p.agreedStarter) })
+        : I18N.t("domino.starterPick.agreed", { name: seatLabel(p.agreedStarter) });
+    } else if (myPick === undefined) {
+      els.starterPickStatus.textContent = p.attempts > 0
+        ? I18N.t("domino.starterPick.mismatch", { n: p.attempts })
+        : I18N.t("domino.starterPick.waitingYou");
+    } else if (partnerPick === undefined) {
+      els.starterPickStatus.textContent = I18N.t("domino.starterPick.waitingPartner");
+    }
   } else if (p.needsTeamPick) {
     els.starterPickBox.classList.add("hidden");
     els.confirmHandBtn.classList.add("hidden");

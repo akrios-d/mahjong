@@ -2,12 +2,12 @@
 html, body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at top, #23301c, #10160c 70%);
+  background: radial-gradient(circle at top, #163a2e, #0a1f19 70%);
   color: #f2f2f2;
   font-family: "Segoe UI", "Noto Sans", sans-serif;
 }
 .topbar { display: flex; align-items: center; gap: 20px; padding: 14px 20px; background: rgba(0,0,0,0.3); }
-.topbar h1 { font-size: 1.1rem; margin: 0; color: #a8e06c; }
+.topbar h1 { font-size: 1.1rem; margin: 0; color: #e8c060; }
 .back { color: #cfe; text-decoration: none; opacity: 0.8; }
 .back:hover { opacity: 1; }
 .lang-bar { margin-left: auto; }
@@ -16,23 +16,23 @@ html, body {
   border-radius: 8px; padding: 5px 10px; font-size: 0.8rem;
 }
 .phase { opacity: 0.85; font-size: 0.9rem; }
-.tag { font-size: 0.6rem; vertical-align: middle; background: #3c5a2a; color: #dff7c0; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+.tag { font-size: 0.6rem; vertical-align: middle; background: #2b5c48; color: #cfe; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
 
 .lobby { display: flex; align-items: center; justify-content: center; min-height: 70vh; }
 .lobby.hidden { display: none; }
-.lobby-box { background: rgba(0,0,0,0.3); border: 1px solid #4d7332; border-radius: 14px; padding: 28px 32px; width: 360px; }
-.lobby-box h2 { margin-top: 0; color: #a8e06c; font-size: 1.1rem; }
+.lobby-box { background: rgba(0,0,0,0.3); border: 1px solid #35735a; border-radius: 14px; padding: 28px 32px; width: 360px; }
+.lobby-box h2 { margin-top: 0; color: #e8c060; font-size: 1.1rem; }
 .lobby-box label { display: block; font-size: 0.8rem; opacity: 0.85; margin-bottom: 12px; }
 .lobby-box input {
   display: block; width: 100%; margin-top: 4px; padding: 8px 10px;
-  border-radius: 6px; border: 1px solid #4d7332; background: rgba(255,255,255,0.06);
+  border-radius: 6px; border: 1px solid #35735a; background: rgba(255,255,255,0.06);
   color: #fff; font-size: 0.9rem;
 }
 .lobby-box button {
-  width: 100%; background: #a8e06c; color: #14200a; border: none;
+  width: 100%; background: #e8c060; color: #1a1a1a; border: none;
   border-radius: 8px; padding: 10px; font-weight: bold; cursor: pointer; margin-top: 6px;
 }
-.lobby-box button.secondary { background: transparent; color: #a8e06c; border: 1px solid #4d7332; }
+.lobby-box button.secondary { background: transparent; color: #e8c060; border: 1px solid #35735a; }
 .lobby-box .hint { font-size: 0.72rem; opacity: 0.6; margin-top: 14px; line-height: 1.4; }
 .lobby-error { color: #ff8080; font-size: 0.8rem; min-height: 1.2em; }
 
@@ -40,8 +40,8 @@ html, body {
 .room-bar.hidden { display: none; }
 .seats-bar { display: flex; justify-content: center; gap: 10px; font-size: 0.78rem; opacity: 0.9; flex-wrap: wrap; }
 .seats-bar .seat-chip { padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); }
-.seats-bar .seat-chip.you { border-color: #a8e06c; color: #a8e06c; }
-.start-btn { background: #a8e06c; color: #14200a; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+.seats-bar .seat-chip.you { border-color: #e8c060; color: #e8c060; }
+.start-btn { background: #e8c060; color: #1a1a1a; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
 .start-btn.hidden { display: none; }
 
 .table.hidden { display: none; }
@@ -51,24 +51,24 @@ html, body {
 .upload-box { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 .upload-label {
-  display: inline-block; background: #3c5a2a; color: #dff7c0; border: 1px solid #4d7332;
+  display: inline-block; background: #2b5c48; color: #cfe; border: 1px solid #35735a;
   border-radius: 10px; padding: 12px 22px; cursor: pointer; font-weight: bold;
 }
-.upload-label:hover { background: #4d7332; }
-.preview-img { max-width: 220px; max-height: 160px; border-radius: 8px; border: 2px solid #4d7332; }
+.upload-label:hover { background: #35735a; }
+.preview-img { max-width: 220px; max-height: 160px; border-radius: 8px; border: 2px solid #35735a; }
 .preview-img.hidden { display: none; }
 
 .grid-box { display: flex; align-items: flex-end; gap: 14px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
 .grid-box.hidden { display: none; }
 .grid-box label { font-size: 0.8rem; opacity: 0.85; display: flex; flex-direction: column; gap: 4px; }
-.grid-box input { width: 70px; padding: 8px; border-radius: 6px; border: 1px solid #4d7332; background: rgba(255,255,255,0.08); color: #fff; }
-.primary-btn { background: #a8e06c; color: #14200a; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; cursor: pointer; }
+.grid-box input { width: 70px; padding: 8px; border-radius: 6px; border: 1px solid #35735a; background: rgba(255,255,255,0.08); color: #fff; }
+.primary-btn { background: #e8c060; color: #1a1a1a; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; cursor: pointer; }
 .primary-btn.hidden { display: none; }
 
 .progress-bar { font-size: 0.85rem; opacity: 0.85; }
 .progress-bar.hidden { display: none; }
 
-.canvas-wrap { width: 100%; max-width: 1000px; background: #1a2410; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+.canvas-wrap { width: 100%; max-width: 1000px; background: #163a2e; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
 .canvas-wrap.hidden { display: none; }
 #canvas { display: block; width: 100%; height: auto; touch-action: none; }
 
@@ -76,8 +76,8 @@ html, body {
 
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .overlay.hidden { display: none; }
-.overlay-box { background: #1a2410; border: 1px solid #4d7332; border-radius: 14px; padding: 30px 36px; text-align: center; }
-.overlay-box button { margin-top: 16px; background: #a8e06c; color: #14200a; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+.overlay-box { background: #163a2e; border: 1px solid #35735a; border-radius: 14px; padding: 30px 36px; text-align: center; }
+.overlay-box button { margin-top: 16px; background: #e8c060; color: #1a1a1a; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
 
 @media (max-width: 480px) {
   .topbar { flex-wrap: wrap; row-gap: 6px; padding: 10px 14px; }

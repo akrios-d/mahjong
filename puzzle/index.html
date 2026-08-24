@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quebra-Cabeça Colaborativo</title>
+<link rel="stylesheet" href="puzzle.css">
+<link rel="manifest" href="../manifest.json">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/icon-192.png">
+<meta name="theme-color" content="#0f2027">
+<script src="../shared/pwa.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../index.html">&larr; voltar</a>
+    <h1>Quebra-Cabeça <span class="tag">online</span></h1>
+    <div id="phaseLabel" class="phase">--</div>
+  </header>
+
+  <div id="lobby" class="lobby">
+    <div class="lobby-box">
+      <h2>Entrar em uma sala</h2>
+      <label>Endereço do servidor
+        <input id="serverUrl" type="text" placeholder="ws://localhost:8787">
+      </label>
+      <label>Código da sala
+        <input id="roomCode" type="text" placeholder="ex: QUEBRA1" maxlength="12">
+      </label>
+      <label>Seu nome
+        <input id="playerName" type="text" placeholder="Seu nome" maxlength="20">
+      </label>
+      <button id="connectBtn">Entrar online</button>
+      <button id="playLocalBtn" class="secondary">Montar sozinho (sem servidor)</button>
+      <p class="hint">Até 8 pessoas por sala, todo mundo arrasta peças ao mesmo
+        tempo. Alguém envia uma foto, escolhe o tamanho da grade e as peças
+        são cortadas com bordas onduladas geradas por uma cadeia de Markov
+        (cada peça sai diferente, mas encaixa perfeitamente na vizinha).</p>
+      <p id="lobbyError" class="lobby-error"></p>
+    </div>
+  </div>
+
+  <div id="roomBar" class="room-bar hidden">
+    <div class="seats-bar" id="seatsBar"></div>
+    <button id="startBtn" class="start-btn hidden">Começar</button>
+  </div>
+
+  <main id="table" class="table hidden">
+    <div id="setupPanel" class="panel hidden">
+      <div id="uploadBox" class="upload-box">
+        <label class="upload-label">
+          📷 Escolher foto
+          <input id="fileInput" type="file" accept="image/*" class="visually-hidden">
+        </label>
+        <img id="previewImg" class="preview-img hidden" alt="Prévia">
+      </div>
+      <div id="gridBox" class="grid-box hidden">
+        <label>Linhas
+          <input id="rowsInput" type="number" min="2" max="8" value="4">
+        </label>
+        <label>Colunas
+          <input id="colsInput" type="number" min="2" max="8" value="4">
+        </label>
+        <button id="startPuzzleBtn" class="primary-btn">Cortar e começar</button>
+      </div>
+    </div>
+
+    <div id="progressBar" class="progress-bar hidden">
+      <span id="progressLabel"></span>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="canvas"></canvas>
+    </div>
+    <div id="messageBox" class="message"></div>
+    <button id="newPuzzleBtn" class="primary-btn hidden">Novo quebra-cabeça</button>
+  </main>
+
+  <div id="winOverlay" class="overlay hidden">
+    <div class="overlay-box">
+      <h2>Quebra-cabeça completo! 🎉</h2>
+      <button id="playAgainBtn">Novo quebra-cabeça</button>
+    </div>
+  </div>
+
+  <script src="../shared/puzzleShapes.js"></script>
+  <script src="../shared/roomUtils.js"></script>
+  <script src="../shared/puzzleEngine.js"></script>
+  <script src="puzzle-client.js"></script>
+</body>
+</html>

@@ -19,10 +19,11 @@ const DE = require(path.join(__dirname, "..", "shared", "dominoEngine.js"));
 const AE = require(path.join(__dirname, "..", "shared", "adedonhaEngine.js"));
 const DsE = require(path.join(__dirname, "..", "shared", "desenhoEngine.js"));
 const MJE = require(path.join(__dirname, "..", "shared", "mahjongEngine.js"));
+const PZE = require(path.join(__dirname, "..", "shared", "puzzleEngine.js"));
 
 const PORT = process.env.PORT || 8787;
-const SEATS = { landlord: 3, domino: 4, adedonha: 8, desenho: 8, mahjong: 4 };
-const ENGINES = { landlord: LE, domino: DE, adedonha: AE, desenho: DsE, mahjong: MJE };
+const SEATS = { landlord: 3, domino: 4, adedonha: 8, desenho: 8, mahjong: 4, puzzle: 8 };
+const ENGINES = { landlord: LE, domino: DE, adedonha: AE, desenho: DsE, mahjong: MJE, puzzle: PZE };
 const GAMES = Object.keys(SEATS);
 
 const rooms = new Map(); // key `${game}:${code}` -> Room
@@ -43,7 +44,10 @@ function broadcastState(room) {
 
 function makeServerRoom(game, code) {
   const room = RU.makeRoom(game, code, SEATS[game]);
-  room.hooks = { update: () => broadcastState(room) };
+  room.hooks = {
+    update: () => broadcastState(room),
+    image: (dataUrl) => room.seats.forEach((seat) => { if (seat.ws) send(seat.ws, { type: "image", dataUrl }); }),
+  };
   return room;
 }
 
@@ -70,6 +74,7 @@ function handleJoin(ws, msg) {
   room.state = room.state || { log: [] };
   RU.pushLog(room, `${room.seats[seatIdx].name} entrou na sala (assento ${seatIdx + 1}).`);
   broadcastState(room);
+  if (game === "puzzle" && room.state.imageData) send(ws, { type: "image", dataUrl: room.state.imageData });
 }
 
 function handleDisconnect(ws) {
@@ -80,8 +85,9 @@ function handleDisconnect(ws) {
   if (!seat || seat.ws !== ws) return;
   const name = seat.name;
   seat.ws = null;
-  if (room.started && room.game !== "desenho") {
-    seat.isAI = true; // AI takes over so the game keeps going (not supported in desenho)
+  const noAiGames = new Set(["desenho", "puzzle"]);
+  if (room.started && !noAiGames.has(room.game)) {
+    seat.isAI = true; // AI takes over so the game keeps going (not supported in desenho/puzzle)
     RU.pushLog(room, `${name} desconectou — a IA assumiu o assento.`);
   } else if (room.started) {
     RU.pushLog(room, `${name} desconectou.`);
@@ -146,6 +152,11 @@ wss.on("connection", (ws) => {
       else if (msg.type === "selfKong") result = engine.submitSelfKong(room, seatIdx);
       else if (msg.type === "selfHu") result = engine.submitSelfHu(room, seatIdx);
       else if (msg.type === "claimResponse") result = engine.submitClaimResponse(room, seatIdx, msg.action, msg.chiOption);
+    } else if (room.game === "puzzle") {
+      if (msg.type === "uploadImage") result = engine.submitUploadImage(room, seatIdx, msg.dataUrl, msg.aspect);
+      else if (msg.type === "startPuzzle") result = engine.submitStartPuzzle(room, seatIdx, msg.rows, msg.cols);
+      else if (msg.type === "movePiece") result = engine.submitMovePiece(room, seatIdx, msg.pieceId, msg.x, msg.y);
+      else if (msg.type === "dropPiece") result = engine.submitDropPiece(room, seatIdx, msg.pieceId, msg.x, msg.y);
     }
     if (result && !result.ok) send(ws, { type: "error", message: result.error });
   });

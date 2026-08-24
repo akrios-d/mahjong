@@ -3,7 +3,7 @@
    Bump CACHE_NAME whenever the precache list changes so old caches get
    cleaned up. Multiplayer traffic (ws:// / wss://) is never intercepted —
    the fetch handler only sees http(s) requests. */
-const CACHE_NAME = "jogos-mesa-v5";
+const CACHE_NAME = "jogos-mesa-v6";
 const PRECACHE = [
   "./",
   "index.html",
@@ -38,6 +38,11 @@ const PRECACHE = [
   "desenho/index.html",
   "desenho/desenho.css",
   "desenho/desenho-client.js",
+  "shared/puzzleShapes.js",
+  "shared/puzzleEngine.js",
+  "puzzle/index.html",
+  "puzzle/puzzle.css",
+  "puzzle/puzzle-client.js",
 ];
 
 self.addEventListener("install", (event) => {

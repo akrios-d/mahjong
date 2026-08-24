@@ -1,6 +1,6 @@
-# Jogos de Mesa Online — Mahjong, Landlord, Dominó, Adedonha & Desenho
+# Jogos de Mesa Online — Mahjong, Landlord, Dominó, Adedonha, Desenho & Quebra-Cabeça
 
-Cinco implementações originais, em HTML/CSS/JS puro no front-end (sem build,
+Seis implementações originais, em HTML/CSS/JS puro no front-end (sem build,
 sem frameworks) mais um servidor Node/WebSocket para o multiplayer, dos
 jogos clássicos chineses/brasileiros/de festa que aparecem em
 *Where Winds Meet* (ou combinam com o clima):
@@ -18,6 +18,10 @@ jogos clássicos chineses/brasileiros/de festa que aparecem em
 - **Desenho & Adivinha** (estilo Gartic/Pictionary) — um jogador desenha,
   os outros adivinham pelo chat; só entre pessoas reais (desenhar e
   adivinhar não dá pra automatizar com bot aqui).
+- **Quebra-Cabeça** — alguém sobe uma foto, escolhe o tamanho da grade e
+  todo mundo na sala arrasta peças ao mesmo tempo pra montar; peças com
+  bordas onduladas geradas por uma cadeia de Markov (só entre pessoas
+  reais, como o Desenho).
 
 O app também funciona como **PWA**: dá pra instalar no celular/desktop e o
 app shell funciona offline (o multiplayer sempre precisa de rede, mas os
@@ -32,8 +36,9 @@ tradicionais chineses e brasileiros, que são de domínio público.
 Os modos **"sozinho contra IA"** do Mahjong/Landlord/Dominó não precisam de
 servidor — é só abrir o `index.html` do jogo no navegador.
 
-Mahjong, Landlord, Dominó, Adedonha e Desenho (multiplayer online) precisam
-do servidor WebSocket rodando (ele guarda o estado das mesas e comanda a IA):
+Mahjong, Landlord, Dominó, Adedonha, Desenho e Quebra-Cabeça (multiplayer
+online) precisam do servidor WebSocket rodando (ele guarda o estado das
+mesas e comanda a IA):
 
 ```bash
 cd server
@@ -46,11 +51,12 @@ pré-preenchido como `ws://localhost:8787`. Cada pessoa que quiser jogar
 entra com o mesmo código de sala; quem estiver na sala pode clicar em
 **"Começar com IA"** (Mahjong/Landlord/Dominó/Adedonha) para preencher as
 cadeiras vazias com bots, ou **"Começar só com quem entrou"**
-(Adedonha/Desenho) para travar a sala só com quem já está presente.
+(Adedonha/Desenho/Quebra-Cabeça) para travar a sala só com quem já está
+presente.
 
 > Se alguém desconectar no meio da partida, a IA assume o assento
-> automaticamente (exceto no Desenho, que não tem bots — o assento só
-> fica marcado como desconectado).
+> automaticamente (exceto no Desenho e no Quebra-Cabeça, que não têm
+> bots — o assento só fica marcado como desconectado).
 
 ## Publicando o servidor (ex.: Render)
 
@@ -144,10 +150,31 @@ ajuste.
 - Os bots só respondem categorias que reconhecem (as padrão); categoria
   personalizada não reconhecida fica em branco para eles.
 
+## Como o Quebra-Cabeça funciona
+
+- Quem sobe a foto: ela é redimensionada no navegador (até 900px no lado
+  maior, JPEG) antes de ir pro servidor, que guarda e retransmite pra todo
+  mundo da sala — não fica salva em disco, some quando a sala acaba.
+- Escolha a grade (2×2 até 8×8) e as peças são cortadas na hora. Cada
+  borda interna vira uma linha ondulada: uma cadeia de Markov (passeio
+  aleatório com viés de persistência, estado -2 a 2) decide o deslocamento
+  em 4 pontos ao longo da borda — dá pra cada peça um contorno único e
+  orgânico, mas as duas peças vizinhas sempre encaixam exatamente porque
+  ambas leem os mesmos pontos da borda compartilhada. Isso é gerado uma
+  vez no servidor (com semente aleatória) e mandado como uma assinatura
+  pequena pra todo mundo — ninguém re-sorteia por conta própria, então
+  todo cliente desenha peças idênticas.
+- Todo mundo arrasta ao mesmo tempo; a posição de uma peça em arraste
+  aparece em tempo real pra todo mundo. Ao soltar perto do lugar certo
+  (dentro de uma margem), a peça encaixa e trava — ninguém mais move ela.
+- Sem rotação de peça (só translação) e sem timer — o quebra-cabeça só
+  termina quando todas as peças estiverem encaixadas.
+
 ## Limitações conhecidas
 
 - Sem reconexão "retomando o mesmo assento": se você cair da sala durante
-  uma partida, a IA assume seu lugar imediatamente (exceto no Desenho).
+  uma partida, a IA assume seu lugar imediatamente (exceto no Desenho e
+  no Quebra-Cabeça).
 - Sem espectadores — a sala aceita só o número de assentos do jogo.
 - Landlord não implementa avião (trincas consecutivas) nem sequências de
   pares — só single, par, trinca, trinca+1, trinca+par, sequência, bomba
@@ -158,6 +185,8 @@ ajuste.
   (fica no sistema de honra, como no jogo físico) — só confere se começa
   com a letra sorteada e se é única entre as respostas.
 - Desenho & Adivinha não tem bots (nenhuma IA desenha ou adivinha aqui).
+- Quebra-Cabeça também não tem bots, nem rotação de peça, nem imagem
+  persistida (some quando a sala acaba/servidor reinicia).
 
 ## Estrutura
 
@@ -173,6 +202,7 @@ shared/
   dominoRules.js / dominoEngine.js          regras + orquestração do Dominó
   adedonhaWords.js / adedonhaEngine.js      banco de palavras + orquestração da Adedonha
   desenhoWords.js / desenhoEngine.js        banco de palavras + orquestração do Desenho
+  puzzleShapes.js / puzzleEngine.js         cadeia de Markov (bordas) + orquestração do Quebra-Cabeça
 server/
   server.js                     servidor WebSocket (salas, estado autoritativo, IA)
   package.json
@@ -181,4 +211,5 @@ landlord/                       Landlord — online ou sozinho contra IA
 domino/                         Dominó em duplas — online ou sozinho contra IA
 adedonha/                       Adedonha — online (com bots)
 desenho/                        Desenho & Adivinha — online (sem bots)
+puzzle/                         Quebra-Cabeça colaborativo — online (sem bots)
 ```

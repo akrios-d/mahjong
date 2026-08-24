@@ -56,7 +56,8 @@ function defaultServerUrl() {
 }
 els.serverUrl.value = defaultServerUrl();
 els.roomCode.value = "QUEBRA1";
-els.playerName.value = "Jogador" + Math.floor(Math.random() * 900 + 100);
+els.playerName.value = PlayerName.get() || ("Jogador" + Math.floor(Math.random() * 900 + 100));
+els.playerName.addEventListener("input", () => PlayerName.set(els.playerName.value));
 
 I18N.applyStaticI18n();
 I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });

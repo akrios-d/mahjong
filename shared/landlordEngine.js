@@ -159,7 +159,7 @@
      and the local-play transport ---- */
   function submitBid(room, seatIdx, value) {
     const s = room.state;
-    if (s.phase !== "bidding" || s.biddingOrder[s.biddingStep] !== seatIdx) return { ok: false, error: "Não é sua vez de dar lance." };
+    if (s.phase !== "bidding" || s.biddingOrder[s.biddingStep] !== seatIdx) return { ok: false, error: "landlord.err.notYourTurnBid" };
     let bid = Number(value);
     if (![0, 1, 2, 3].includes(bid) || (bid !== 0 && bid <= s.highestBid)) bid = 0;
     registerBid(room, seatIdx, bid);
@@ -168,13 +168,13 @@
 
   function submitPlay(room, seatIdx, uids) {
     const s = room.state;
-    if (s.phase !== "playing" || s.turnIdx !== seatIdx) return { ok: false, error: "Não é sua vez." };
+    if (s.phase !== "playing" || s.turnIdx !== seatIdx) return { ok: false, error: "landlord.err.notYourTurn" };
     const hand = s.players[seatIdx].hand;
     const cards = hand.filter((c) => (uids || []).includes(c.uid));
     const combo = LR.analyzeCombo(cards);
-    if (!combo) return { ok: false, error: "Combinação inválida." };
+    if (!combo) return { ok: false, error: "landlord.err.invalidCombo" };
     if (s.currentTrick && s.currentTrick.ownerIdx !== seatIdx && !LR.compareCombo(combo, s.currentTrick.combo)) {
-      return { ok: false, error: "Sua jogada não supera a atual." };
+      return { ok: false, error: "landlord.err.doesNotBeat" };
     }
     applyPlay(room, seatIdx, combo);
     return { ok: true };
@@ -182,9 +182,9 @@
 
   function submitPass(room, seatIdx) {
     const s = room.state;
-    if (s.phase !== "playing" || s.turnIdx !== seatIdx) return { ok: false, error: "Não é sua vez." };
+    if (s.phase !== "playing" || s.turnIdx !== seatIdx) return { ok: false, error: "landlord.err.notYourTurn" };
     if (s.currentTrick === null || s.currentTrick.ownerIdx === seatIdx) {
-      return { ok: false, error: "Você está liderando, precisa jogar." };
+      return { ok: false, error: "landlord.err.mustLead" };
     }
     applyPass(room, seatIdx);
     return { ok: true };

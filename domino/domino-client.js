@@ -261,6 +261,7 @@ function render() {
   }
 
   els.passBtn.disabled = !myTurn || DR.hasAnyLegalMove(latest.hand, latest.board);
+  els.hintBtn.disabled = !myTurn || !DR.hasAnyLegalMove(latest.hand, latest.board);
 
   if (latest.phase === "playing") {
     setMessage(myTurn ? "Sua vez: escolha uma peça e o lado." : `Vez de ${seatLabel(latest.turnIdx)}`);

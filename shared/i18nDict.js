@@ -1,25 +1,184 @@
 "use strict";
-/* pt-BR dictionary entries for the structured {key,params} log lines emitted
-   by shared/roomUtils.js pushLog(). Only pt-BR is filled in for now — I18N.t()
-   already falls back to pt-BR (or to the raw key) for any locale/key that
-   isn't covered yet, so this is safe to ship incrementally while the other
-   4 languages get filled in game by game. Must load after shared/i18n.js. */
+/* Translation dictionary for the shared i18n system (shared/i18n.js).
+   Keys are grouped by "who owns them": landing.* (index.html), common.*
+   (shared chrome/lobby/log strings reused by every game), and
+   <game>.* (game-specific UI + structured log messages). Must load after
+   shared/i18n.js. Locales: pt-BR (default/fallback), en, zh, fr, es. */
 (function (root) {
   const I18N = typeof module !== "undefined" && module.exports ? require("./i18n.js") : root.I18N;
 
   I18N.registerDict({
-    "common.log.joined": { "pt-BR": "{name} entrou na sala (assento {seat})." },
-    "common.log.disconnectedAiTookOver": { "pt-BR": "{name} desconectou — a IA assumiu o assento." },
-    "common.log.disconnected": { "pt-BR": "{name} desconectou." },
-    "common.log.left": { "pt-BR": "{name} saiu da sala." },
+    /* ---------------- landing page ---------------- */
+    "landing.subtitle": {
+      "pt-BR": "Seis jogos, recriados do zero — online, com IA e instaláveis como app (PWA).",
+      en: "Six games, recreated from scratch — online, with AI, and installable as an app (PWA).",
+      zh: "六款游戏，从零重制——支持联机、AI 对战，并可作为应用安装（PWA）。",
+      fr: "Six jeux, recréés de zéro — en ligne, avec IA, et installables comme application (PWA).",
+      es: "Seis juegos, recreados desde cero — en línea, con IA e instalables como app (PWA).",
+    },
+    "landing.badge.online": { "pt-BR": "online", en: "online", zh: "在线", fr: "en ligne", es: "en línea" },
+    "landing.mahjong.desc": {
+      "pt-BR": "O Mahjong de verdade (estilo Sichuan): 108 peças, 4 jogadores, escolha seu Missing Suit e feche com 4 grupos + 1 par. Pong, Kong, Chi e Hu.",
+      en: "The real Mahjong (Sichuan style): 108 tiles, 4 players, pick your Missing Suit and win with 4 sets + 1 pair. Pong, Kong, Chi and Hu.",
+      zh: "正宗麻将（四川血战到底玩法）：108张牌，4名玩家，选择缺一门，凑齐4组+1对即可胡牌。碰、杠、吃、胡。",
+      fr: "Le vrai Mahjong (style Sichuan) : 108 tuiles, 4 joueurs, choisissez votre couleur manquante et gagnez avec 4 groupes + 1 paire. Pong, Kong, Chi et Hu.",
+      es: "El Mahjong de verdad (estilo Sichuan): 108 fichas, 4 jugadores, elige tu palo faltante y gana con 4 grupos + 1 par. Pong, Kong, Chi y Hu.",
+    },
+    "landing.landlord.desc": {
+      "pt-BR": "Dispute a rodada de lances, vire o landlord e jogue suas cartas com amigos e/ou bots. Online ou sozinho contra IA, sem servidor.",
+      en: "Bid for the landlord role, then play your cards with friends and/or bots. Online or solo against AI, no server needed.",
+      zh: "参与叫地主，成为地主后出牌，与好友和/或机器人对战。可联机或单人对战AI，无需服务器。",
+      fr: "Enchérissez pour devenir le landlord, puis jouez vos cartes avec des amis et/ou des bots. En ligne ou seul contre l'IA, sans serveur.",
+      es: "Compite en la puja, conviértete en el landlord y juega tus cartas con amigos y/o bots. En línea o solo contra la IA, sin servidor.",
+    },
+    "landing.domino.title": { "pt-BR": "Dominó em Duplas", en: "Domino (Pairs)", zh: "双人组多米诺", fr: "Domino en équipes", es: "Dominó en Parejas" },
+    "landing.domino.desc": {
+      "pt-BR": "4 jogadores, 6 peças cada, 4 no morto. Partida até 6 pontos: batida (1), carroça (2), lá-e-lô (3), cruzada (4).",
+      en: "4 players, 6 tiles each, 4 hidden. Match to 6 points: normal win (1), double-6 sweep (2), matched-ends win (3), cross win (4).",
+      zh: "4名玩家，每人6张骨牌，4张暗牌。比赛先到6分：普通胡(1分)、双六胡(2分)、两端胡(3分)、十字胡(4分)。",
+      fr: "4 joueurs, 6 dominos chacun, 4 cachés. Match jusqu'à 6 points : victoire normale (1), double-six (2), double bout (3), croisée (4).",
+      es: "4 jugadores, 6 fichas cada uno, 4 ocultas. Partida a 6 puntos: normal (1), carroza (2), lá-e-lô (3), cruzada (4).",
+    },
+    "landing.adedonha.desc": {
+      "pt-BR": "Proponha categorias, sorteie a letra e escreva palavras até alguém gritar \"PARE!\". Até 8 jogadores + bots.",
+      en: "Propose categories, draw a letter and write words until someone shouts \"STOP!\". Up to 8 players + bots.",
+      zh: "提出类别，随机抽取字母，写出以该字母开头的词语，直到有人喊\"停！\"。最多支持8名玩家+机器人。",
+      fr: "Proposez des catégories, tirez une lettre et écrivez des mots jusqu'à ce que quelqu'un crie « STOP ! ». Jusqu'à 8 joueurs + bots.",
+      es: "Propón categorías, sortea la letra y escribe palabras hasta que alguien grite \"¡PARE!\". Hasta 8 jugadores + bots.",
+    },
+    "landing.desenho.title": { "pt-BR": "Desenho & Adivinha", en: "Draw & Guess", zh: "你画我猜", fr: "Dessine & Devine", es: "Dibujo y Adivina" },
+    "landing.desenho.desc": {
+      "pt-BR": "Um jogador desenha, os outros adivinham no chat. Estilo Gartic/Pictionary — só entre pessoas reais.",
+      en: "One player draws, the others guess in the chat. Gartic/Pictionary style — real players only.",
+      zh: "一名玩家作画，其他人在聊天框中猜词。类似 Gartic/你画我猜——仅限真人玩家。",
+      fr: "Un joueur dessine, les autres devinent dans le chat. Style Gartic/Pictionary — entre vraies personnes uniquement.",
+      es: "Un jugador dibuja, los demás adivinan en el chat. Estilo Gartic/Pictionary — solo entre personas reales.",
+    },
+    "landing.puzzle.title": { "pt-BR": "Quebra-Cabeça", en: "Jigsaw Puzzle", zh: "拼图", fr: "Puzzle", es: "Rompecabezas" },
+    "landing.puzzle.desc": {
+      "pt-BR": "Suba uma foto e monte junto com a galera em tempo real. Peças com bordas onduladas geradas por uma cadeia de Markov — cada uma sai diferente, mas encaixa certinho.",
+      en: "Upload a photo and assemble it together in real time. Pieces have wavy edges generated by a Markov chain — every one is different, but they all fit perfectly.",
+      zh: "上传一张照片，与大家实时合力拼图。拼块的波浪边缘由马尔可夫链生成——每块都独一无二，但都严丝合缝。",
+      fr: "Téléversez une photo et assemblez-la ensemble en temps réel. Les pièces ont des bords ondulés générés par une chaîne de Markov — chacune est différente, mais elles s'emboîtent parfaitement.",
+      es: "Sube una foto y arma el rompecabezas junto a otros en tiempo real. Las piezas tienen bordes ondulados generados por una cadena de Markov — cada una es distinta, pero encajan perfecto.",
+    },
+    "landing.serverNote.before": {
+      "pt-BR": "Mahjong, Landlord, Dominó, Adedonha, Desenho e Quebra-Cabeça são multiplayer via servidor próprio (WebSocket). Veja o",
+      en: "Mahjong, Landlord, Domino, Adedonha, Draw & Guess and the Jigsaw Puzzle are multiplayer via a dedicated server (WebSocket). See the",
+      zh: "麻将、斗地主、多米诺、Adedonha、你画我猜和拼图均通过专属服务器（WebSocket）实现联机对战。请参阅",
+      fr: "Mahjong, Landlord, Domino, Adedonha, Dessine & Devine et le Puzzle sont multijoueurs via un serveur dédié (WebSocket). Voir le",
+      es: "Mahjong, Landlord, Dominó, Adedonha, Dibujo y Adivina y el Rompecabezas son multijugador vía un servidor propio (WebSocket). Consulta el",
+    },
+    "landing.serverNote.after": {
+      "pt-BR": "para rodar o servidor localmente ou publicá-lo (ex.: Render). Mahjong, Landlord e Dominó também têm um modo \"sozinho contra IA\" que roda 100% no navegador, sem precisar do servidor.",
+      en: "to run the server locally or deploy it (e.g. Render). Mahjong, Landlord and Domino also have a \"solo vs AI\" mode that runs 100% in the browser, no server needed.",
+      zh: "了解如何在本地运行服务器或将其部署上线（如 Render）。麻将、斗地主和多米诺还提供\"单人对战AI\"模式，完全在浏览器中运行，无需服务器。",
+      fr: "pour lancer le serveur en local ou le déployer (ex. Render). Mahjong, Landlord et Domino ont aussi un mode « solo contre IA » qui tourne à 100 % dans le navigateur, sans serveur.",
+      es: "para ejecutar el servidor localmente o publicarlo (ej.: Render). Mahjong, Landlord y Dominó también tienen un modo \"solo contra IA\" que corre 100% en el navegador, sin necesitar servidor.",
+    },
+    "landing.footer": {
+      "pt-BR": "Implementação independente e original das regras tradicionais de mahjong (estilo Sichuan), dou dizhu e dominó brasileiro, mais dois jogos de festa (adedonha e desenho e adivinha) e um quebra-cabeça colaborativo. Não utiliza assets, código ou conteúdo do jogo Where Winds Meet.",
+      en: "Independent, original implementation of traditional mahjong rules (Sichuan style), dou dizhu and Brazilian domino, plus two party games (word game and draw & guess) and a collaborative jigsaw puzzle. Does not use assets, code or content from the game Where Winds Meet.",
+      zh: "本项目为传统麻将规则（四川玩法）、斗地主和巴西多米诺的独立原创实现，另附两款派对游戏（文字接龙和你画我猜）及一个协作拼图。未使用《燕云十六声》(Where Winds Meet) 的任何素材、代码或内容。",
+      fr: "Implémentation indépendante et originale des règles traditionnelles du mahjong (style Sichuan), du dou dizhu et du domino brésilien, plus deux jeux d'ambiance (jeu de mots et dessine & devine) et un puzzle collaboratif. N'utilise aucun asset, code ou contenu du jeu Where Winds Meet.",
+      es: "Implementación independiente y original de las reglas tradicionales del mahjong (estilo Sichuan), dou dizhu y dominó brasileño, más dos juegos de fiesta (juego de palabras y dibujo y adivina) y un rompecabezas colaborativo. No utiliza assets, código ni contenido del juego Where Winds Meet.",
+    },
 
-    "landlord.log.dealt": { "pt-BR": "Cartas distribuídas. Rodada de lances iniciada." },
-    "landlord.log.bidPassed": { "pt-BR": "{name} passou o lance." },
-    "landlord.log.bidMade": { "pt-BR": "{name} deu lance de {bid}." },
-    "landlord.log.noBids": { "pt-BR": "Ninguém deu lance — nova distribuição." },
-    "landlord.log.becameLandlord": { "pt-BR": "{name} é o Landlord!" },
-    "landlord.log.played": { "pt-BR": "{name} jogou {comboType} ({cards})." },
-    "landlord.log.wonHand": { "pt-BR": "{name} venceu a mão!" },
-    "landlord.log.passed": { "pt-BR": "{name} passou." },
+    /* ---------------- common (shared chrome/lobby/log) ---------------- */
+    "common.back": { "pt-BR": "← voltar", en: "← back", zh: "← 返回", fr: "← retour", es: "← volver" },
+    "common.lobby.serverUrl": { "pt-BR": "Endereço do servidor", en: "Server address", zh: "服务器地址", fr: "Adresse du serveur", es: "Dirección del servidor" },
+    "common.lobby.roomCode": { "pt-BR": "Código da sala", en: "Room code", zh: "房间代码", fr: "Code de la salle", es: "Código de la sala" },
+    "common.lobby.playerName": { "pt-BR": "Seu nome", en: "Your name", zh: "你的名字", fr: "Votre nom", es: "Tu nombre" },
+    "common.lobby.playerNamePlaceholder": { "pt-BR": "Seu nome", en: "Your name", zh: "你的名字", fr: "Votre nom", es: "Tu nombre" },
+    "common.lobby.connect": { "pt-BR": "Entrar online", en: "Join online", zh: "在线加入", fr: "Rejoindre en ligne", es: "Entrar en línea" },
+    "common.lobby.connecting": { "pt-BR": "Conectando...", en: "Connecting...", zh: "正在连接……", fr: "Connexion...", es: "Conectando..." },
+    "common.lobby.invalidAddress": { "pt-BR": "Endereço inválido: {error}", en: "Invalid address: {error}", zh: "地址无效：{error}", fr: "Adresse invalide : {error}", es: "Dirección inválida: {error}" },
+    "common.lobby.connectionLost": { "pt-BR": "Conexão perdida com o servidor.", en: "Connection to the server was lost.", zh: "与服务器的连接已断开。", fr: "Connexion au serveur perdue.", es: "Se perdió la conexión con el servidor." },
+    "common.lobby.connectFailed": { "pt-BR": "Não foi possível conectar ao servidor.", en: "Could not connect to the server.", zh: "无法连接到服务器。", fr: "Impossible de se connecter au serveur.", es: "No fue posible conectar al servidor." },
+    "common.startWithAI": { "pt-BR": "Começar com IA", en: "Start with AI", zh: "与AI开始", fr: "Démarrer avec l'IA", es: "Comenzar con IA" },
+    "common.you": { "pt-BR": "Você", en: "You", zh: "你", fr: "Vous", es: "Tú" },
+    "common.seat": { "pt-BR": "Assento {n}", en: "Seat {n}", zh: "座位 {n}", fr: "Siège {n}", es: "Asiento {n}" },
+    "common.controls.hint": { "pt-BR": "Sugerir", en: "Hint", zh: "提示", fr: "Suggestion", es: "Sugerir" },
+    "common.error.prefix": { "pt-BR": "Erro", en: "Error", zh: "错误", fr: "Erreur", es: "Error" },
+    "common.phase.playing": { "pt-BR": "Em jogo", en: "Playing", zh: "游戏中", fr: "En cours", es: "En juego" },
+    "common.phase.roundEnd": { "pt-BR": "Mão encerrada", en: "Hand over", zh: "本局结束", fr: "Manche terminée", es: "Mano finalizada" },
+    "common.phase.waiting": { "pt-BR": "Aguardando jogadores...", en: "Waiting for players...", zh: "等待玩家中……", fr: "En attente de joueurs...", es: "Esperando jugadores..." },
+    "common.turnOf": { "pt-BR": "Vez de {name}", en: "{name}'s turn", zh: "轮到 {name}", fr: "Tour de {name}", es: "Turno de {name}" },
+    "common.youWon": { "pt-BR": "Você ganhou. 🎉", en: "You won. 🎉", zh: "你赢了。🎉", fr: "Vous avez gagné. 🎉", es: "Ganaste. 🎉" },
+    "common.youLost": { "pt-BR": "Você perdeu.", en: "You lost.", zh: "你输了。", fr: "Vous avez perdu.", es: "Perdiste." },
+    "common.seat.ai": { "pt-BR": "{name} (IA)", en: "{name} (AI)", zh: "{name}（AI）", fr: "{name} (IA)", es: "{name} (IA)" },
+    "common.seat.offline": { "pt-BR": "{name} (offline)", en: "{name} (offline)", zh: "{name}（离线）", fr: "{name} (hors ligne)", es: "{name} (fuera de línea)" },
+    "common.seat.empty": { "pt-BR": "vazio", en: "empty", zh: "空位", fr: "vide", es: "vacío" },
+    "common.seat.chip": { "pt-BR": "Assento {n}: {status}", en: "Seat {n}: {status}", zh: "座位 {n}：{status}", fr: "Siège {n} : {status}", es: "Asiento {n}: {status}" },
+
+    "common.log.joined": {
+      "pt-BR": "{name} entrou na sala (assento {seat}).", en: "{name} joined the room (seat {seat}).",
+      zh: "{name} 加入了房间（座位 {seat}）。", fr: "{name} a rejoint la salle (siège {seat}).", es: "{name} entró a la sala (asiento {seat}).",
+    },
+    "common.log.disconnectedAiTookOver": {
+      "pt-BR": "{name} desconectou — a IA assumiu o assento.", en: "{name} disconnected — AI took over the seat.",
+      zh: "{name} 已断线——AI 接管了该座位。", fr: "{name} s'est déconnecté — l'IA a repris le siège.", es: "{name} se desconectó — la IA tomó el asiento.",
+    },
+    "common.log.disconnected": {
+      "pt-BR": "{name} desconectou.", en: "{name} disconnected.", zh: "{name} 已断线。", fr: "{name} s'est déconnecté.", es: "{name} se desconectó.",
+    },
+    "common.log.left": {
+      "pt-BR": "{name} saiu da sala.", en: "{name} left the room.", zh: "{name} 离开了房间。", fr: "{name} a quitté la salle.", es: "{name} salió de la sala.",
+    },
+
+    /* ---------------- Landlord ---------------- */
+    "landlord.lobby.title": { "pt-BR": "Entrar em uma sala", en: "Join a room", zh: "加入房间", fr: "Rejoindre une salle", es: "Entrar a una sala" },
+    "landlord.lobby.roomCodePlaceholder": { "pt-BR": "ex: SALA1", en: "e.g. ROOM1", zh: "例如：ROOM1", fr: "ex. SALLE1", es: "ej: SALA1" },
+    "landlord.lobby.playLocal": {
+      "pt-BR": "Jogar sozinho contra IA (sem servidor)", en: "Play solo against AI (no server)",
+      zh: "单人对战AI（无需服务器）", fr: "Jouer seul contre l'IA (sans serveur)", es: "Jugar solo contra IA (sin servidor)",
+    },
+    "landlord.lobby.hint": {
+      "pt-BR": "3 assentos por sala. Quem entrar pode clicar em \"Começar com IA\" para preencher as cadeiras vazias com bots e iniciar. O modo \"sozinho\" roda 100% no seu navegador, não precisa do servidor.",
+      en: "3 seats per room. Anyone who joins can click \"Start with AI\" to fill the empty seats with bots and begin. The \"solo\" mode runs 100% in your browser, no server needed.",
+      zh: "每个房间3个座位。加入的玩家可以点击\"与AI开始\"用机器人填满空位并开始游戏。\"单人\"模式完全在浏览器中运行，无需服务器。",
+      fr: "3 sièges par salle. Toute personne qui rejoint peut cliquer sur « Démarrer avec l'IA » pour remplir les sièges vides avec des bots et commencer. Le mode « solo » tourne à 100 % dans votre navigateur, sans serveur.",
+      es: "3 asientos por sala. Quien entre puede hacer clic en \"Comenzar con IA\" para llenar los asientos vacíos con bots y empezar. El modo \"solo\" corre 100% en tu navegador, sin necesitar servidor.",
+    },
+    "landlord.bid.pass": { "pt-BR": "Passar", en: "Pass", zh: "过", fr: "Passer", es: "Pasar" },
+    "landlord.controls.play": { "pt-BR": "Jogar", en: "Play", zh: "出牌", fr: "Jouer", es: "Jugar" },
+    "landlord.controls.newHand": { "pt-BR": "Nova mão", en: "New hand", zh: "新一局", fr: "Nouvelle manche", es: "Nueva mano" },
+    "landlord.role.landlordParen": { "pt-BR": "(Landlord)", en: "(Landlord)", zh: "（地主）", fr: "(Landlord)", es: "(Landlord)" },
+    "landlord.role.peasantParen": { "pt-BR": "(Peasant)", en: "(Peasant)", zh: "（农民）", fr: "(Peasant)", es: "(Peasant)" },
+    "landlord.role.landlord": { "pt-BR": "Landlord", en: "Landlord", zh: "地主", fr: "Landlord", es: "Landlord" },
+    "landlord.role.peasant": { "pt-BR": "Peasant", en: "Peasant", zh: "农民", fr: "Peasant", es: "Peasant" },
+    "landlord.cardCount": { "pt-BR": "({n} cartas)", en: "({n} cards)", zh: "（{n} 张牌）", fr: "({n} cartes)", es: "({n} cartas)" },
+    "landlord.bid.yourTurn": { "pt-BR": "Sua vez de dar lance (maior atual: {highest})", en: "Your turn to bid (current highest: {highest})", zh: "轮到你叫分了（当前最高：{highest}）", fr: "À vous d'enchérir (enchère la plus haute : {highest})", es: "Tu turno de pujar (mayor actual: {highest})" },
+    "landlord.play.selectFirst": { "pt-BR": "Selecione cartas para jogar.", en: "Select cards to play.", zh: "请选择要出的牌。", fr: "Sélectionnez des cartes à jouer.", es: "Selecciona cartas para jugar." },
+    "landlord.hint.none": { "pt-BR": "Nenhuma jogada sugerida (considere passar).", en: "No suggested play (consider passing).", zh: "没有可建议的出牌（考虑过牌）。", fr: "Aucune jouable suggérée (envisagez de passer).", es: "Ninguna jugada sugerida (considera pasar)." },
+    "landlord.hint.suggestion": { "pt-BR": "Sugestão: {combo}", en: "Suggestion: {combo}", zh: "建议：{combo}", fr: "Suggestion : {combo}", es: "Sugerencia: {combo}" },
+    "landlord.turn.mustBeat": { "pt-BR": "Sua vez: bata a jogada atual ou passe.", en: "Your turn: beat the current play or pass.", zh: "轮到你了：压过当前的牌或过牌。", fr: "À vous : battez le coup actuel ou passez.", es: "Tu turno: supera la jugada actual o pasa." },
+    "landlord.turn.leadAny": { "pt-BR": "Sua vez: jogue qualquer combinação.", en: "Your turn: play any combination.", zh: "轮到你了：出任意牌型。", fr: "À vous : jouez n'importe quelle combinaison.", es: "Tu turno: juega cualquier combinación." },
+    "landlord.roundEnd.wonBy": { "pt-BR": "{name} venceu a mão!", en: "{name} won the hand!", zh: "{name} 赢得了本局！", fr: "{name} a remporté la manche !", es: "¡{name} ganó la mano!" },
+    "landlord.phase.bidding": { "pt-BR": "Rodada de lances", en: "Bidding round", zh: "叫分阶段", fr: "Tour d'enchères", es: "Ronda de pujas" },
+
+    "landlord.combo.single": { "pt-BR": "Carta única", en: "Single", zh: "单张", fr: "Carte seule", es: "Carta única" },
+    "landlord.combo.pair": { "pt-BR": "Par", en: "Pair", zh: "对子", fr: "Paire", es: "Par" },
+    "landlord.combo.triple": { "pt-BR": "Trinca", en: "Triple", zh: "三张", fr: "Brelan", es: "Trío" },
+    "landlord.combo.triple_single": { "pt-BR": "Trinca+1", en: "Triple+1", zh: "三带一", fr: "Brelan+1", es: "Trío+1" },
+    "landlord.combo.triple_pair": { "pt-BR": "Trinca+par", en: "Triple+pair", zh: "三带对", fr: "Brelan+paire", es: "Trío+par" },
+    "landlord.combo.straight": { "pt-BR": "Sequência", en: "Straight", zh: "顺子", fr: "Séquence", es: "Escalera" },
+    "landlord.combo.bomb": { "pt-BR": "Bomba", en: "Bomb", zh: "炸弹", fr: "Bombe", es: "Bomba" },
+    "landlord.combo.rocket": { "pt-BR": "Rocket", en: "Rocket", zh: "火箭", fr: "Rocket", es: "Rocket" },
+
+    "landlord.err.notYourTurnBid": { "pt-BR": "Não é sua vez de dar lance.", en: "It's not your turn to bid.", zh: "还没轮到你叫分。", fr: "Ce n'est pas à vous d'enchérir.", es: "No es tu turno de pujar." },
+    "landlord.err.notYourTurn": { "pt-BR": "Não é sua vez.", en: "It's not your turn.", zh: "还没轮到你。", fr: "Ce n'est pas votre tour.", es: "No es tu turno." },
+    "landlord.err.invalidCombo": { "pt-BR": "Combinação inválida.", en: "Invalid combination.", zh: "无效的牌型。", fr: "Combinaison invalide.", es: "Combinación inválida." },
+    "landlord.err.doesNotBeat": { "pt-BR": "Sua jogada não supera a atual.", en: "Your play doesn't beat the current one.", zh: "你的牌型无法压过当前的牌。", fr: "Votre jeu ne bat pas le coup actuel.", es: "Tu jugada no supera la actual." },
+    "landlord.err.mustLead": { "pt-BR": "Você está liderando, precisa jogar.", en: "You're leading, you must play.", zh: "你是本轮领出方，必须出牌。", fr: "Vous menez, vous devez jouer.", es: "Estás liderando, debes jugar." },
+
+    "landlord.log.dealt": { "pt-BR": "Cartas distribuídas. Rodada de lances iniciada.", en: "Cards dealt. Bidding round started.", zh: "发牌完毕，叫分阶段开始。", fr: "Cartes distribuées. Tour d'enchères commencé.", es: "Cartas repartidas. Ronda de pujas iniciada." },
+    "landlord.log.bidPassed": { "pt-BR": "{name} passou o lance.", en: "{name} passed on bidding.", zh: "{name} 不叫。", fr: "{name} a passé l'enchère.", es: "{name} pasó la puja." },
+    "landlord.log.bidMade": { "pt-BR": "{name} deu lance de {bid}.", en: "{name} bid {bid}.", zh: "{name} 叫了 {bid} 分。", fr: "{name} a misé {bid}.", es: "{name} pujó {bid}." },
+    "landlord.log.noBids": { "pt-BR": "Ninguém deu lance — nova distribuição.", en: "Nobody bid — redealing.", zh: "无人叫分——重新发牌。", fr: "Personne n'a misé — nouvelle distribution.", es: "Nadie pujó — nuevo reparto." },
+    "landlord.log.becameLandlord": { "pt-BR": "{name} é o Landlord!", en: "{name} is the Landlord!", zh: "{name} 成为地主！", fr: "{name} est le Landlord !", es: "¡{name} es el Landlord!" },
+    "landlord.log.played": { "pt-BR": "{name} jogou {comboType} ({cards}).", en: "{name} played {comboType} ({cards}).", zh: "{name} 出了{comboType}（{cards}）。", fr: "{name} a joué {comboType} ({cards}).", es: "{name} jugó {comboType} ({cards})." },
+    "landlord.log.wonHand": { "pt-BR": "{name} venceu a mão!", en: "{name} won the hand!", zh: "{name} 赢得了本局！", fr: "{name} a remporté la manche !", es: "¡{name} ganó la mano!" },
+    "landlord.log.passed": { "pt-BR": "{name} passou.", en: "{name} passed.", zh: "{name} 过牌。", fr: "{name} a passé.", es: "{name} pasó." },
   });
 })(typeof window !== "undefined" ? window : globalThis);

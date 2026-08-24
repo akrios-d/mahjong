@@ -13,50 +13,57 @@
 </head>
 <body>
   <div class="landing">
+    <div class="lang-bar" id="langBar"></div>
     <h1>雀韵 &nbsp;·&nbsp; 地主</h1>
-    <p class="sub">Seis jogos, recriados do zero — online, com IA e instaláveis como app (PWA).</p>
+    <p class="sub" data-i18n="landing.subtitle">Seis jogos, recriados do zero — online, com IA e instaláveis como app (PWA).</p>
     <div class="games">
       <a class="game-card" href="mahjong/index.html">
         <span class="glyph">🀄</span>
-        <h2>Mahjong <span class="badge">online</span></h2>
-        <p>O Mahjong de verdade (estilo Sichuan): 108 peças, 4 jogadores, escolha seu Missing Suit e feche com 4 grupos + 1 par. Pong, Kong, Chi e Hu.</p>
+        <h2>Mahjong <span class="badge" data-i18n="landing.badge.online">online</span></h2>
+        <p data-i18n="landing.mahjong.desc">O Mahjong de verdade (estilo Sichuan): 108 peças, 4 jogadores, escolha seu Missing Suit e feche com 4 grupos + 1 par. Pong, Kong, Chi e Hu.</p>
       </a>
       <a class="game-card" href="landlord/index.html">
         <span class="glyph">🂡</span>
-        <h2>Landlord (斗地主) <span class="badge">online</span></h2>
-        <p>Dispute a rodada de lances, vire o landlord e jogue suas cartas com amigos e/ou bots. Online ou sozinho contra IA, sem servidor.</p>
+        <h2>Landlord (斗地主) <span class="badge" data-i18n="landing.badge.online">online</span></h2>
+        <p data-i18n="landing.landlord.desc">Dispute a rodada de lances, vire o landlord e jogue suas cartas com amigos e/ou bots. Online ou sozinho contra IA, sem servidor.</p>
       </a>
       <a class="game-card" href="domino/index.html">
         <span class="glyph">🀱</span>
-        <h2>Dominó em Duplas <span class="badge">online</span></h2>
-        <p>4 jogadores, 6 peças cada, 4 no morto. Partida até 6 pontos: batida (1), carroça (2), lá-e-lô (3), cruzada (4).</p>
+        <h2><span data-i18n="landing.domino.title">Dominó em Duplas</span> <span class="badge" data-i18n="landing.badge.online">online</span></h2>
+        <p data-i18n="landing.domino.desc">4 jogadores, 6 peças cada, 4 no morto. Partida até 6 pontos: batida (1), carroça (2), lá-e-lô (3), cruzada (4).</p>
       </a>
       <a class="game-card" href="adedonha/index.html">
         <span class="glyph">🔤</span>
-        <h2>Adedonha <span class="badge">online</span></h2>
-        <p>Proponha categorias, sorteie a letra e escreva palavras até alguém gritar "PARE!". Até 8 jogadores + bots.</p>
+        <h2>Adedonha <span class="badge" data-i18n="landing.badge.online">online</span></h2>
+        <p data-i18n="landing.adedonha.desc">Proponha categorias, sorteie a letra e escreva palavras até alguém gritar "PARE!". Até 8 jogadores + bots.</p>
       </a>
       <a class="game-card" href="desenho/index.html">
         <span class="glyph">🎨</span>
-        <h2>Desenho &amp; Adivinha <span class="badge">online</span></h2>
-        <p>Um jogador desenha, os outros adivinham no chat. Estilo Gartic/Pictionary — só entre pessoas reais.</p>
+        <h2><span data-i18n="landing.desenho.title">Desenho &amp; Adivinha</span> <span class="badge" data-i18n="landing.badge.online">online</span></h2>
+        <p data-i18n="landing.desenho.desc">Um jogador desenha, os outros adivinham no chat. Estilo Gartic/Pictionary — só entre pessoas reais.</p>
       </a>
       <a class="game-card" href="puzzle/index.html">
         <span class="glyph">🧩</span>
-        <h2>Quebra-Cabeça <span class="badge">online</span></h2>
-        <p>Suba uma foto e monte junto com a galera em tempo real. Peças com bordas onduladas geradas por uma cadeia de Markov — cada uma sai diferente, mas encaixa certinho.</p>
+        <h2><span data-i18n="landing.puzzle.title">Quebra-Cabeça</span> <span class="badge" data-i18n="landing.badge.online">online</span></h2>
+        <p data-i18n="landing.puzzle.desc">Suba uma foto e monte junto com a galera em tempo real. Peças com bordas onduladas geradas por uma cadeia de Markov — cada uma sai diferente, mas encaixa certinho.</p>
       </a>
     </div>
-    <p class="server-note">Mahjong, Landlord, Dominó, Adedonha, Desenho e Quebra-Cabeça são multiplayer via
-      servidor próprio (WebSocket). Veja o
+    <p class="server-note">
+      <span data-i18n="landing.serverNote.before">Mahjong, Landlord, Dominó, Adedonha, Desenho e Quebra-Cabeça são multiplayer via servidor próprio (WebSocket). Veja o</span>
       <a href="https://github.com/akrios-d/mahjong/blob/main/README.md">README</a>
-      para rodar o servidor localmente ou publicá-lo (ex.: Render). Mahjong, Landlord e Dominó também
-      têm um modo "sozinho contra IA" que roda 100% no navegador, sem precisar do servidor.</p>
-    <footer class="note">
+      <span data-i18n="landing.serverNote.after">para rodar o servidor localmente ou publicá-lo (ex.: Render). Mahjong, Landlord e Dominó também têm um modo "sozinho contra IA" que roda 100% no navegador, sem precisar do servidor.</span>
+    </p>
+    <footer class="note" data-i18n="landing.footer">
       Implementação independente e original das regras tradicionais de mahjong (estilo Sichuan),
       dou dizhu e dominó brasileiro, mais dois jogos de festa (adedonha e desenho e adivinha) e um
       quebra-cabeça colaborativo. Não utiliza assets, código ou conteúdo do jogo Where Winds Meet.
     </footer>
   </div>
+  <script src="shared/i18n.js"></script>
+  <script src="shared/i18nDict.js"></script>
+  <script>
+    I18N.applyStaticI18n();
+    I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => I18N.applyStaticI18n());
+  </script>
 </body>
 </html>

@@ -58,6 +58,9 @@ els.serverUrl.value = defaultServerUrl();
 els.roomCode.value = "SALA1";
 els.playerName.value = "Jogador" + Math.floor(Math.random() * 900 + 100);
 
+I18N.applyStaticI18n();
+I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });
+
 function setLobbyError(msg) { els.lobbyError.textContent = msg || ""; }
 
 els.connectBtn.addEventListener("click", connect);
@@ -68,14 +71,14 @@ function connect() {
   const room = els.roomCode.value.trim() || "SALA1";
   const name = els.playerName.value.trim() || "Jogador";
   mode = "online";
-  setLobbyError("Conectando...");
-  try { ws = new WebSocket(url); } catch (e) { setLobbyError("Endereço inválido: " + e.message); return; }
+  setLobbyError(I18N.t("common.lobby.connecting"));
+  try { ws = new WebSocket(url); } catch (e) { setLobbyError(I18N.t("common.lobby.invalidAddress", { error: e.message })); return; }
 
   ws.addEventListener("open", () => {
     ws.send(JSON.stringify({ type: "join", game: "landlord", room, name }));
   });
-  ws.addEventListener("close", () => setLobbyError("Conexão perdida com o servidor."));
-  ws.addEventListener("error", () => setLobbyError("Não foi possível conectar ao servidor."));
+  ws.addEventListener("close", () => setLobbyError(I18N.t("common.lobby.connectionLost")));
+  ws.addEventListener("error", () => setLobbyError(I18N.t("common.lobby.connectFailed")));
   ws.addEventListener("message", (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.type === "joined") {
@@ -83,7 +86,7 @@ function connect() {
       showTable();
       return;
     }
-    if (msg.type === "error") { setMessage("Erro: " + msg.message); return; }
+    if (msg.type === "error") { setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(msg.message)); return; }
     if (msg.type === "state") { latest = msg.state; render(); }
   });
 }
@@ -120,7 +123,7 @@ function send(obj) {
     if (obj.type === "bid") result = LE.submitBid(localRoom, 0, obj.value);
     else if (obj.type === "play") result = LE.submitPlay(localRoom, 0, obj.uids);
     else if (obj.type === "pass") result = LE.submitPass(localRoom, 0);
-    if (result && !result.ok) setMessage("Erro: " + result.error);
+    if (result && !result.ok) setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(result.error));
   }
 }
 
@@ -132,12 +135,14 @@ els.bidBox.querySelectorAll("button").forEach((b) => {
 });
 
 els.playBtn.addEventListener("click", () => {
-  if (selectedUids.size === 0) { setMessage("Selecione cartas para jogar."); return; }
+  if (selectedUids.size === 0) { setMessage(I18N.t("landlord.play.selectFirst")); return; }
   send({ type: "play", uids: [...selectedUids] });
   selectedUids.clear();
 });
 
 els.passBtn.addEventListener("click", () => { send({ type: "pass" }); selectedUids.clear(); });
+
+function comboLabelI18n(combo) { return I18N.t("landlord.combo." + combo.type); }
 
 els.hintBtn.addEventListener("click", () => {
   if (!latest || !latest.started || mySeat < 0) return;
@@ -148,15 +153,15 @@ els.hintBtn.addEventListener("click", () => {
   } else {
     combo = LR.aiChooseFollow(hand, latest.currentTrick);
   }
-  if (!combo) { setMessage("Nenhuma jogada sugerida (considere passar)."); return; }
+  if (!combo) { setMessage(I18N.t("landlord.hint.none")); return; }
   selectedUids = new Set(combo.cards.map((c) => c.uid));
   render();
-  setMessage(`Sugestão: ${LR.comboLabel(combo)}`);
+  setMessage(I18N.t("landlord.hint.suggestion", { combo: comboLabelI18n(combo) }));
 });
 
 function seatLabel(i) {
-  if (i === mySeat) return "Você";
-  return latest.seats[i].name || `Assento ${i + 1}`;
+  if (i === mySeat) return I18N.t("common.you");
+  return latest.seats[i].name || I18N.t("common.seat", { n: i + 1 });
 }
 
 function otherSeatIndices() {
@@ -168,8 +173,8 @@ function otherSeatIndices() {
 function render() {
   if (!latest) return;
   els.phase.textContent = latest.started
-    ? (latest.phase === "bidding" ? "Rodada de lances" : latest.phase === "playing" ? "Em jogo" : "Mão encerrada")
-    : "Aguardando jogadores...";
+    ? I18N.t(latest.phase === "bidding" ? "landlord.phase.bidding" : latest.phase === "playing" ? "common.phase.playing" : "common.phase.roundEnd")
+    : I18N.t("common.phase.waiting");
 
   renderSeatsBar();
 
@@ -182,14 +187,14 @@ function render() {
   const [leftIdx, rightIdx] = otherSeatIndices();
   els.nameA.textContent = seatLabel(leftIdx);
   els.nameB.textContent = seatLabel(rightIdx);
-  els.roleYou.textContent = latest.isLandlord[mySeat] ? "(Landlord)" : latest.landlordIdx !== -1 ? "(Peasant)" : "";
-  els.roleA.textContent = latest.landlordIdx === -1 ? "" : (latest.isLandlord[leftIdx] ? "Landlord" : "Peasant");
-  els.roleB.textContent = latest.landlordIdx === -1 ? "" : (latest.isLandlord[rightIdx] ? "Landlord" : "Peasant");
+  els.roleYou.textContent = latest.isLandlord[mySeat] ? I18N.t("landlord.role.landlordParen") : latest.landlordIdx !== -1 ? I18N.t("landlord.role.peasantParen") : "";
+  els.roleA.textContent = latest.landlordIdx === -1 ? "" : I18N.t(latest.isLandlord[leftIdx] ? "landlord.role.landlord" : "landlord.role.peasant");
+  els.roleB.textContent = latest.landlordIdx === -1 ? "" : I18N.t(latest.isLandlord[rightIdx] ? "landlord.role.landlord" : "landlord.role.peasant");
 
   els.handA.innerHTML = Array.from({ length: latest.handCounts[leftIdx] }, () => `<div class="card-back"></div>`).join("");
   els.handB.innerHTML = Array.from({ length: latest.handCounts[rightIdx] }, () => `<div class="card-back"></div>`).join("");
-  els.countA.textContent = `(${latest.handCounts[leftIdx]} cartas)`;
-  els.countB.textContent = `(${latest.handCounts[rightIdx]} cartas)`;
+  els.countA.textContent = I18N.t("landlord.cardCount", { n: latest.handCounts[leftIdx] });
+  els.countB.textContent = I18N.t("landlord.cardCount", { n: latest.handCounts[rightIdx] });
 
   renderLastPlay(els.lastA, latest.lastPlays[leftIdx]);
   renderLastPlay(els.lastB, latest.lastPlays[rightIdx]);
@@ -212,7 +217,7 @@ function render() {
   if (latest.phase === "bidding") {
     if (latest.currentBidderIdx === mySeat) {
       els.bidBox.classList.remove("hidden");
-      els.bidPrompt.textContent = `Sua vez de dar lance (maior atual: ${latest.highestBid})`;
+      els.bidPrompt.textContent = I18N.t("landlord.bid.yourTurn", { highest: latest.highestBid });
       els.bidBox.querySelectorAll("button").forEach((b) => {
         const v = Number(b.dataset.bid);
         b.disabled = v !== 0 && v <= latest.highestBid;
@@ -249,13 +254,13 @@ function render() {
   els.passBtn.disabled = !myTurn || !latest.currentTrick || latest.currentTrick.ownerIdx === mySeat;
 
   if (latest.phase === "playing") {
-    setMessage(myTurn ? (latest.currentTrick ? "Sua vez: bata a jogada atual ou passe." : "Sua vez: jogue qualquer combinação.") : `Vez de ${seatLabel(latest.turnIdx)}`);
+    setMessage(myTurn ? I18N.t(latest.currentTrick ? "landlord.turn.mustBeat" : "landlord.turn.leadAny") : I18N.t("common.turnOf", { name: seatLabel(latest.turnIdx) }));
   }
 
   if (latest.phase === "roundEnd") {
     els.newBtn.classList.remove("hidden");
     const won = latest.winnerIdx !== null && latest.isLandlord[latest.winnerIdx] === latest.isLandlord[mySeat];
-    setMessage(`${seatLabel(latest.winnerIdx)} venceu a mão! ${won ? "Você ganhou. 🎉" : "Você perdeu."}`);
+    setMessage(I18N.t("landlord.roundEnd.wonBy", { name: seatLabel(latest.winnerIdx) }) + " " + I18N.t(won ? "common.youWon" : "common.youLost"));
   } else {
     els.newBtn.classList.add("hidden");
   }
@@ -270,7 +275,7 @@ function formatLogEntry(entry) {
   if (!entry || typeof entry !== "object") return entry || "";
   if (entry.key === "landlord.log.played" && entry.params) {
     const cards = (entry.params.cards || []).map((c) => LR.cardLabel(c) + (c.suit || "")).join(", ");
-    return I18N.t(entry.key, { ...entry.params, comboType: LR.comboLabel({ type: entry.params.comboType }), cards });
+    return I18N.t(entry.key, { ...entry.params, comboType: comboLabelI18n({ type: entry.params.comboType }), cards });
   }
   return I18N.t(entry.key, entry.params);
 }
@@ -295,8 +300,8 @@ function renderSeatsBar() {
     if (i === mySeat) chip.classList.add("you");
     if (s.isAI) chip.classList.add("ai");
     if (latest.started && latest.turnIdx === i) chip.classList.add("turn");
-    const status = s.name ? (s.isAI ? `${s.name} (IA)` : s.connected ? s.name : `${s.name} (offline)`) : "vazio";
-    chip.textContent = `Assento ${i + 1}: ${status}`;
+    const status = s.name ? (s.isAI ? I18N.t("common.seat.ai", { name: s.name }) : s.connected ? s.name : I18N.t("common.seat.offline", { name: s.name })) : I18N.t("common.seat.empty");
+    chip.textContent = I18N.t("common.seat.chip", { n: i + 1, status });
     els.seatsBar.appendChild(chip);
   });
 }

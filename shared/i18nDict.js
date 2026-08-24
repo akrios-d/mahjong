@@ -87,6 +87,13 @@
       fr: "Serveur enregistré — le mode en ligne est disponible.",
       es: "Servidor guardado — el modo en línea está disponible.",
     },
+    "landing.name.saved": {
+      "pt-BR": "Nome salvo.",
+      en: "Name saved.",
+      zh: "姓名已保存。",
+      fr: "Nom enregistré.",
+      es: "Nombre guardado.",
+    },
     "landing.mahjong.desc": {
       "pt-BR": "O Mahjong de verdade (estilo Sichuan): 108 peças, 4 jogadores, escolha seu Missing Suit e feche com 4 grupos + 1 par. Pong, Kong, Chi e Hu.",
       en: "The real Mahjong (Sichuan style): 108 tiles, 4 players, pick your Missing Suit and win with 4 sets + 1 pair. Pong, Kong, Chi and Hu.",

@@ -65,7 +65,11 @@
       <button id="closeSettingsBtn" type="button" class="modal-close" aria-label="Fechar">✕</button>
       <h2 data-i18n="landing.settings.title">Nome e servidor</h2>
       <label for="playerNameInput" data-i18n="landing.playerName.label">Seu nome (usado em todos os jogos)</label>
-      <input id="playerNameInput" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
+      <div class="name-row">
+        <input id="playerNameInput" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
+        <button id="saveNameBtn" type="button" disabled data-i18n="landing.serverUrl.save">Salvar</button>
+      </div>
+      <p id="nameSaveStatus" class="server-test-status"></p>
       <label for="serverUrlInput" data-i18n="landing.serverUrl.label">Endereço do servidor (usado em todos os jogos)</label>
       <div class="server-url-row">
         <input id="serverUrlInput" type="text" placeholder="ws://localhost:8787">
@@ -91,8 +95,24 @@
     settingsModal.addEventListener("click", (e) => { if (e.target === settingsModal) settingsModal.classList.add("hidden"); });
 
     const playerNameInput = document.getElementById("playerNameInput");
-    playerNameInput.value = PlayerName.get();
-    playerNameInput.addEventListener("input", () => PlayerName.set(playerNameInput.value));
+    const saveNameBtn = document.getElementById("saveNameBtn");
+    const nameSaveStatus = document.getElementById("nameSaveStatus");
+    const savedName = PlayerName.get();
+    playerNameInput.value = savedName;
+    if (savedName) { nameSaveStatus.textContent = I18N.t("landing.name.saved"); nameSaveStatus.classList.add("ok"); }
+
+    playerNameInput.addEventListener("input", () => {
+      saveNameBtn.disabled = playerNameInput.value.trim() === "" || playerNameInput.value === savedNameCurrent();
+      nameSaveStatus.textContent = "";
+      nameSaveStatus.classList.remove("ok");
+    });
+    function savedNameCurrent() { return PlayerName.get(); }
+    saveNameBtn.addEventListener("click", () => {
+      PlayerName.set(playerNameInput.value.trim());
+      saveNameBtn.disabled = true;
+      nameSaveStatus.textContent = I18N.t("landing.name.saved");
+      nameSaveStatus.classList.add("ok");
+    });
     const serverUrlInput = document.getElementById("serverUrlInput");
     const testServerBtn = document.getElementById("testServerBtn");
     const saveServerBtn = document.getElementById("saveServerBtn");

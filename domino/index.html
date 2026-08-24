@@ -50,31 +50,33 @@
   </div>
 
   <main id="table" class="table hidden">
-    <div class="side top" id="seatTop">
-      <div class="name" id="nameTop"></div>
-      <div class="hand-back" id="handTop"></div>
-    </div>
-    <div class="side left" id="seatLeft">
-      <div class="name" id="nameLeft"></div>
-      <div class="hand-back vertical" id="handLeft"></div>
-    </div>
-    <div class="side right" id="seatRight">
-      <div class="name" id="nameRight"></div>
-      <div class="hand-back vertical" id="handRight"></div>
-    </div>
+    <div class="table-felt">
+      <div class="side top" id="seatTop">
+        <div class="name" id="nameTop"></div>
+        <div class="hand-back" id="handTop"></div>
+      </div>
+      <div class="side left" id="seatLeft">
+        <div class="name" id="nameLeft"></div>
+        <div class="hand-back vertical" id="handLeft"></div>
+      </div>
+      <div class="side right" id="seatRight">
+        <div class="name" id="nameRight"></div>
+        <div class="hand-back vertical" id="handRight"></div>
+      </div>
 
-    <div class="board-area">
-      <div class="board-felt"><div class="board-chain" id="boardChain"></div></div>
-      <div class="morto" id="mortoInfo"></div>
-      <div id="messageBox" class="message"></div>
-      <div id="lastBatida" class="last-batida"></div>
-      <div id="handEndPanel" class="hand-end-panel hidden">
-        <div id="starterPickBox" class="starter-pick hidden">
-          <p id="starterPickPrompt"></p>
-          <div class="starter-pick-buttons" id="starterPickButtons"></div>
-          <p id="starterPickStatus" class="starter-pick-status"></p>
+      <div class="board-area">
+        <div class="board-chain" id="boardChain"></div>
+        <div class="morto" id="mortoInfo"></div>
+        <div id="messageBox" class="message"></div>
+        <div id="lastBatida" class="last-batida"></div>
+        <div id="handEndPanel" class="hand-end-panel hidden">
+          <div id="starterPickBox" class="starter-pick hidden">
+            <p id="starterPickPrompt"></p>
+            <div class="starter-pick-buttons" id="starterPickButtons"></div>
+            <p id="starterPickStatus" class="starter-pick-status"></p>
+          </div>
+          <button id="confirmHandBtn" class="start-btn hidden" data-i18n="domino.controls.confirmNextHand">Confirmar próxima mão</button>
         </div>
-        <button id="confirmHandBtn" class="start-btn hidden" data-i18n="domino.controls.confirmNextHand">Confirmar próxima mão</button>
       </div>
     </div>
 

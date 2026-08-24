@@ -290,6 +290,7 @@ function render() {
   els.kongBtn.classList.toggle("hidden", !(myTurnToDiscard && MR.hasConcealedKong(me.hand)));
   els.huBtn.classList.toggle("hidden", !(myTurnToDiscard && MR.isWinningHand(me.hand, (me.revealed || []).length, me.missingSuit)));
   els.newHandBtn.classList.toggle("hidden", latest.phase !== "roundEnd");
+  els.hintBtn.disabled = !myTurnToDiscard;
 
   if (latest.phase === "playing" && !handHint && !tileInspectActive) {
     if (myTurnToDiscard) setMessage(I18N.t("mahjong.turn.discard"));

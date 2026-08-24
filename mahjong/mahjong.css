@@ -146,6 +146,8 @@ html, body {
 }
 .controls button:hover { background: #2b5c48; }
 .controls button.hidden { display: none; }
+.controls button:disabled { opacity: 0.4; cursor: default; }
+.controls button:disabled:hover { background: #1f4235; }
 
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .overlay.hidden { display: none; }

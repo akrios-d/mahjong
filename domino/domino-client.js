@@ -233,12 +233,45 @@ function renderTile(tile, opts) {
   return el;
 }
 
-// Renders the board as a snaking (boustrophedon) chain, like a real domino
-// table: fills a row left-to-right, then wraps to a new row that continues
-// right-to-left from where the previous one ended, instead of one long
-// horizontally-scrolling line or rows that all restart on the left.
+// Lays out the chain as a real boustrophedon snake: fills a row of
+// columns, then turns the corner with an actual chain tile rotated 90°
+// (like a real domino table running out of space) and continues in the
+// opposite direction on the next row. Returns {items, levelCount} where
+// each item is {tile, col, level, vertical}; col/level are grid units,
+// not pixels — renderBoardChain converts those to positions.
+function layoutSnake(chain, cols) {
+  const items = [];
+  let idx = 0;
+  let level = 0;
+  let incoming = null; // 'left' | 'right' | null — which column this level's incoming corner occupies
+  while (idx < chain.length) {
+    const remaining = chain.length - idx;
+    const reservedIncoming = incoming ? 1 : 0;
+    const needsOutgoing = remaining > cols - reservedIncoming;
+    const outgoing = needsOutgoing ? (incoming === "right" ? "left" : "right") : null;
+    const reservedLeft = incoming === "left" || outgoing === "left" ? 1 : 0;
+    const reservedRight = incoming === "right" || outgoing === "right" ? 1 : 0;
+    // On the final level (no outgoing corner), don't pad out to full
+    // capacity — there may be fewer tiles left than columns available.
+    const normalCount = outgoing ? cols - reservedLeft - reservedRight : remaining;
+    const startCol = reservedLeft;
+    for (let k = 0; k < normalCount; k++) {
+      items.push({ tile: chain[idx], col: startCol + k, level, vertical: false });
+      idx++;
+    }
+    if (!outgoing) break;
+    const cornerCol = outgoing === "right" ? cols - 1 : 0;
+    items.push({ tile: chain[idx], col: cornerCol, level, vertical: true });
+    idx++;
+    incoming = outgoing;
+    level++;
+  }
+  return { items, levelCount: level + 1 };
+}
+
 function renderBoardChain(chain) {
   els.boardChain.innerHTML = "";
+  els.boardChain.style.height = "";
   if (chain.length === 0) {
     const hintEl = document.createElement("span");
     hintEl.style.opacity = "0.5";
@@ -247,29 +280,35 @@ function renderBoardChain(chain) {
     return;
   }
 
-  // Measure real tile width (varies by breakpoint) by rendering the first
-  // tile into the live container, then decide how many fit per row.
-  const probeRow = document.createElement("div");
-  probeRow.className = "board-row";
+  // Measure real tile size (varies by breakpoint) with a throwaway probe.
   const probeTile = renderTile(chain[0], { static: true });
-  probeRow.appendChild(probeTile);
-  els.boardChain.appendChild(probeRow);
-  const tileWidth = probeTile.offsetWidth || 40;
-  const gap = 4;
-  const containerWidth = els.boardChain.parentElement.clientWidth || 300;
-  const perRow = Math.max(1, Math.floor((containerWidth + gap) / (tileWidth + gap)));
+  probeTile.style.visibility = "hidden";
+  els.boardChain.appendChild(probeTile);
+  const tileW = probeTile.offsetWidth || 60;
+  const tileH = probeTile.offsetHeight || 30;
   els.boardChain.innerHTML = "";
 
-  for (let i = 0; i < chain.length; i += perRow) {
-    let rowTiles = chain.slice(i, i + perRow);
-    const rowIndex = i / perRow;
-    const reversed = rowIndex % 2 === 1;
-    if (reversed) rowTiles = [...rowTiles].reverse();
-    const rowEl = document.createElement("div");
-    rowEl.className = reversed ? "board-row reversed" : "board-row";
-    rowTiles.forEach((t) => rowEl.appendChild(renderTile(t, { static: true })));
-    els.boardChain.appendChild(rowEl);
-  }
+  const gap = 4;
+  const containerWidth = els.boardChain.parentElement.clientWidth || 300;
+  const cols = Math.max(2, Math.floor((containerWidth + gap) / (tileW + gap)));
+  const { items, levelCount } = layoutSnake(chain, cols);
+
+  items.forEach(({ tile, col, level, vertical }) => {
+    const el = renderTile(tile, { static: true });
+    if (vertical) {
+      el.classList.add("vertical");
+      el.style.width = tileH + "px";
+      el.style.height = (2 * tileH + gap) + "px";
+      el.style.left = (col === cols - 1 ? containerWidth - tileH : 0) + "px";
+    } else {
+      el.style.width = tileW + "px";
+      el.style.height = tileH + "px";
+      el.style.left = col * (tileW + gap) + "px";
+    }
+    el.style.top = level * (tileH + gap) + "px";
+    els.boardChain.appendChild(el);
+  });
+  els.boardChain.style.height = (levelCount * (tileH + gap) - gap) + "px";
 }
 
 /* ---------------- rendering ---------------- */

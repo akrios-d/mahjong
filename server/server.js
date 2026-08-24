@@ -137,6 +137,7 @@ wss.on("connection", (ws) => {
     } else if (room.game === "domino") {
       if (msg.type === "playDomino") result = engine.submitPlay(room, seatIdx, msg.tileId, msg.side);
       else if (msg.type === "passDomino") result = engine.submitPass(room, seatIdx);
+      else if (msg.type === "pickStarter") result = engine.submitPickStarter(room, seatIdx, msg.seat);
     } else if (room.game === "adedonha") {
       if (msg.type === "addCategory") result = engine.submitAddCategory(room, seatIdx, msg.text);
       else if (msg.type === "useDefaults") result = engine.submitUseDefaults(room);

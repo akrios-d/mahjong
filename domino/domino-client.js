@@ -50,6 +50,13 @@ const els = {
   passBtn: document.getElementById("passBtn"),
   hintBtn: document.getElementById("hintBtn"),
   newHandBtn: document.getElementById("newHandBtn"),
+
+  handEndPanel: document.getElementById("handEndPanel"),
+  confirmHandBtn: document.getElementById("confirmHandBtn"),
+  starterPickBox: document.getElementById("starterPickBox"),
+  starterPickPrompt: document.getElementById("starterPickPrompt"),
+  starterPickButtons: document.getElementById("starterPickButtons"),
+  starterPickStatus: document.getElementById("starterPickStatus"),
 };
 
 function defaultServerUrl() {
@@ -59,6 +66,9 @@ function defaultServerUrl() {
 els.serverUrl.value = defaultServerUrl();
 els.roomCode.value = "MESA1";
 els.playerName.value = "Jogador" + Math.floor(Math.random() * 900 + 100);
+
+I18N.applyStaticI18n();
+I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => { I18N.applyStaticI18n(); render(); });
 
 function setLobbyError(msg) { els.lobbyError.textContent = msg || ""; }
 function setMessage(txt) { els.message.textContent = txt; }
@@ -74,7 +84,8 @@ function send(obj) {
     let result = null;
     if (obj.type === "playDomino") result = DE.submitPlay(localRoom, 0, obj.tileId, obj.side);
     else if (obj.type === "passDomino") result = DE.submitPass(localRoom, 0);
-    if (result && !result.ok) setMessage("Erro: " + result.error);
+    else if (obj.type === "pickStarter") result = DE.submitPickStarter(localRoom, 0, obj.seat);
+    if (result && !result.ok) setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(result.error));
   }
 }
 
@@ -86,12 +97,12 @@ function connect() {
   const room = els.roomCode.value.trim() || "MESA1";
   const name = els.playerName.value.trim() || "Jogador";
   mode = "online";
-  setLobbyError("Conectando...");
-  try { ws = new WebSocket(url); } catch (e) { setLobbyError("Endereço inválido: " + e.message); return; }
+  setLobbyError(I18N.t("common.lobby.connecting"));
+  try { ws = new WebSocket(url); } catch (e) { setLobbyError(I18N.t("common.lobby.invalidAddress", { error: e.message })); return; }
 
   ws.addEventListener("open", () => ws.send(JSON.stringify({ type: "join", game: "domino", room, name })));
-  ws.addEventListener("close", () => setLobbyError("Conexão perdida com o servidor."));
-  ws.addEventListener("error", () => setLobbyError("Não foi possível conectar ao servidor."));
+  ws.addEventListener("close", () => setLobbyError(I18N.t("common.lobby.connectionLost")));
+  ws.addEventListener("error", () => setLobbyError(I18N.t("common.lobby.connectFailed")));
   ws.addEventListener("message", (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.type === "joined") {
@@ -99,7 +110,7 @@ function connect() {
       showTable();
       return;
     }
-    if (msg.type === "error") { setMessage("Erro: " + msg.message); return; }
+    if (msg.type === "error") { setMessage(I18N.t("common.error.prefix") + ": " + I18N.t(msg.message)); return; }
     if (msg.type === "state") { latest = msg.state; render(); }
   });
 }
@@ -124,6 +135,7 @@ function showTable() {
 
 els.startBtn.addEventListener("click", () => send({ type: "startWithAI" }));
 els.newHandBtn.addEventListener("click", () => send({ type: "newHand" }));
+els.confirmHandBtn.addEventListener("click", () => send({ type: "newHand" }));
 els.passBtn.addEventListener("click", () => { send({ type: "passDomino" }); selectedTileId = null; render(); });
 els.cancelSelectBtn.addEventListener("click", () => { selectedTileId = null; render(); });
 els.playLeftBtn.addEventListener("click", () => playSelected("left"));
@@ -140,11 +152,11 @@ els.hintBtn.addEventListener("click", () => {
   for (const t of latest.hand) {
     const sides = DR.legalSides(t, latest.board);
     if (sides.length) {
-      setMessage(`Sugestão: jogue ${t.a}-${t.b} pela ${sides[0] === "left" ? "esquerda" : "direita"}.`);
+      setMessage(I18N.t("domino.hint.suggestion", { a: t.a, b: t.b, side: I18N.t(sides[0] === "left" ? "domino.side.left" : "domino.side.right") }));
       return;
     }
   }
-  setMessage("Nenhuma jogada possível — considere passar.");
+  setMessage(I18N.t("domino.hint.none"));
 });
 
 /* ---------------- pip rendering ---------------- */
@@ -187,8 +199,8 @@ function renderTile(tile, opts) {
 
 /* ---------------- rendering ---------------- */
 function seatLabel(i) {
-  if (i === mySeat) return "Você";
-  return (latest.seats[i].name || `Assento ${i + 1}`);
+  if (i === mySeat) return I18N.t("common.you");
+  return (latest.seats[i].name || I18N.t("common.seat", { n: i + 1 }));
 }
 
 function relativeSeats() {
@@ -198,8 +210,8 @@ function relativeSeats() {
 function render() {
   if (!latest) return;
   els.phase.textContent = latest.started
-    ? (latest.phase === "playing" ? "Em jogo" : latest.phase === "matchEnd" ? "Partida encerrada" : "Mão encerrada")
-    : "Aguardando jogadores...";
+    ? I18N.t(latest.phase === "playing" ? "common.phase.playing" : latest.phase === "matchEnd" ? "domino.phase.matchEnd" : "common.phase.roundEnd")
+    : I18N.t("common.phase.waiting");
 
   renderSeatsBar();
   renderScoreboard();
@@ -208,27 +220,27 @@ function render() {
   els.startBtn.classList.add("hidden");
 
   const { top, left, right } = relativeSeats();
-  els.nameTop.textContent = seatLabel(top) + (latest.started ? ` (dupla ${DR.teamOf(top) === DR.teamOf(mySeat) ? "sua" : "adv."})` : "");
+  els.nameTop.textContent = seatLabel(top) + (latest.started ? ` (${I18N.t(DR.teamOf(top) === DR.teamOf(mySeat) ? "domino.team.yours" : "domino.team.opponent")})` : "");
   els.nameLeft.textContent = seatLabel(left);
   els.nameRight.textContent = seatLabel(right);
   els.handTop.innerHTML = Array.from({ length: latest.handCounts[top] }, () => `<div class="card-back"></div>`).join("");
   els.handLeft.innerHTML = Array.from({ length: latest.handCounts[left] }, () => `<div class="card-back"></div>`).join("");
   els.handRight.innerHTML = Array.from({ length: latest.handCounts[right] }, () => `<div class="card-back"></div>`).join("");
 
-  els.mortoInfo.textContent = `Morto: ${latest.mortoCount} peças escondidas (não usadas na partida)`;
+  els.mortoInfo.textContent = I18N.t("domino.mortoInfo", { n: latest.mortoCount });
 
   els.boardChain.innerHTML = "";
   if (latest.board.chain.length === 0) {
     const hintEl = document.createElement("span");
     hintEl.style.opacity = "0.5";
-    hintEl.textContent = "Tabuleiro vazio — abre quem tem a maior carroça.";
+    hintEl.textContent = I18N.t("domino.board.empty");
     els.boardChain.appendChild(hintEl);
   } else {
     for (const t of latest.board.chain) els.boardChain.appendChild(renderTile(t, { static: true }));
   }
 
   els.lastBatida.textContent = latest.lastBatida
-    ? `Última mão: ${latest.lastBatida.label} (+${latest.lastBatida.points} p.)`
+    ? I18N.t("domino.lastHand", { label: I18N.t("domino.batida." + latest.lastBatida.type), points: latest.lastBatida.points })
     : "";
 
   // hand + selection
@@ -253,7 +265,7 @@ function render() {
     const tile = latest.hand.find((t) => t.id === selectedTileId);
     const sides = tile ? DR.legalSides(tile, latest.board) : [];
     els.playChoice.classList.remove("hidden");
-    els.playChoiceLabel.textContent = tile ? `Jogar ${tile.a}-${tile.b}:` : "";
+    els.playChoiceLabel.textContent = tile ? I18N.t("domino.playChoice.label", { a: tile.a, b: tile.b }) : "";
     els.playLeftBtn.style.display = sides.includes("left") ? "" : "none";
     els.playRightBtn.style.display = sides.includes("right") ? "" : "none";
   } else {
@@ -264,15 +276,67 @@ function render() {
   els.hintBtn.disabled = !myTurn || !DR.hasAnyLegalMove(latest.hand, latest.board);
 
   if (latest.phase === "playing") {
-    setMessage(myTurn ? "Sua vez: escolha uma peça e o lado." : `Vez de ${seatLabel(latest.turnIdx)}`);
+    setMessage(myTurn ? I18N.t("domino.turn.yours") : I18N.t("common.turnOf", { name: seatLabel(latest.turnIdx) }));
   } else if (latest.phase === "handEnd" || latest.phase === "matchEnd") {
     if (latest.log && latest.log.length) {
-      const entry = latest.log[latest.log.length - 1];
-      setMessage(I18N.t(entry.key, entry.params));
+      setMessage(formatLogEntry(latest.log[latest.log.length - 1]));
     }
   }
 
   els.newHandBtn.classList.toggle("hidden", latest.phase !== "matchEnd");
+  renderHandEndPanel();
+}
+
+function formatLogEntry(entry) {
+  if (!entry || typeof entry !== "object") return entry || "";
+  const p = entry.params || {};
+  if (entry.key === "domino.log.played") {
+    return I18N.t(entry.key, { ...p, side: I18N.t(p.side === "left" ? "domino.side.left" : "domino.side.right") });
+  }
+  if (entry.key === "domino.log.teamScored") {
+    return I18N.t(entry.key, { ...p, team: I18N.t("domino.teamNameFull." + p.team), batidaType: I18N.t("domino.batida." + p.batidaType) });
+  }
+  if (entry.key === "domino.log.matchWon") {
+    return I18N.t(entry.key, { ...p, team: I18N.t("domino.teamNameFull." + p.team) });
+  }
+  return I18N.t(entry.key, p);
+}
+
+function renderHandEndPanel() {
+  const show = latest.phase === "handEnd" && latest.pendingHandEnd;
+  els.handEndPanel.classList.toggle("hidden", !show);
+  if (!show) return;
+  const p = latest.pendingHandEnd;
+
+  if (p.needsTeamPick && p.teammates.includes(mySeat)) {
+    els.starterPickBox.classList.remove("hidden");
+    els.confirmHandBtn.classList.add("hidden");
+    const partnerSeat = p.teammates.find((s) => s !== mySeat);
+    els.starterPickPrompt.textContent = I18N.t("domino.starterPick.prompt");
+    els.starterPickButtons.innerHTML = "";
+    const myPick = p.picks[mySeat];
+    const addPickBtn = (label, seat) => {
+      const b = document.createElement("button");
+      b.textContent = label;
+      if (myPick === seat) b.classList.add("picked");
+      b.addEventListener("click", () => send({ type: "pickStarter", seat }));
+      els.starterPickButtons.appendChild(b);
+    };
+    addPickBtn(I18N.t("domino.starterPick.me"), mySeat);
+    addPickBtn(I18N.t("domino.starterPick.partner", { name: seatLabel(partnerSeat) }), partnerSeat);
+
+    const partnerPick = p.picks[partnerSeat];
+    if (myPick === undefined) els.starterPickStatus.textContent = I18N.t("domino.starterPick.waitingYou");
+    else if (partnerPick === undefined) els.starterPickStatus.textContent = I18N.t("domino.starterPick.waitingPartner");
+    else if (myPick === partnerPick) els.starterPickStatus.textContent = I18N.t("domino.starterPick.agreed", { name: seatLabel(myPick) });
+    else els.starterPickStatus.textContent = I18N.t("domino.starterPick.mismatch");
+  } else if (p.needsTeamPick) {
+    els.starterPickBox.classList.add("hidden");
+    els.confirmHandBtn.classList.add("hidden");
+  } else {
+    els.starterPickBox.classList.add("hidden");
+    els.confirmHandBtn.classList.remove("hidden");
+  }
 }
 
 function renderSeatsBar() {
@@ -283,17 +347,21 @@ function renderSeatsBar() {
     if (i === mySeat) chip.classList.add("you");
     if (s.isAI) chip.classList.add("ai");
     if (latest.started && latest.turnIdx === i) chip.classList.add("turn");
-    const status = s.name ? (s.isAI ? `${s.name} (IA)` : s.connected ? s.name : `${s.name} (offline)`) : "vazio";
-    chip.textContent = `Assento ${i + 1}: ${status}`;
+    const status = s.name ? (s.isAI ? I18N.t("common.seat.ai", { name: s.name }) : s.connected ? s.name : I18N.t("common.seat.offline", { name: s.name })) : I18N.t("common.seat.empty");
+    chip.textContent = I18N.t("common.seat.chip", { n: i + 1, status });
     els.seatsBar.appendChild(chip);
   });
+}
+
+function teamLabel(team, myTeam) {
+  return `${I18N.t(team === myTeam ? "domino.team.yours" : "domino.team.opponent")} (${I18N.t("domino.teamName." + team)})`;
 }
 
 function renderScoreboard() {
   if (!latest.started || !latest.teamScores) { els.scoreboard.innerHTML = ""; return; }
   const myTeam = DR.teamOf(mySeat);
   els.scoreboard.innerHTML = `
-    <span>${myTeam === 0 ? "Sua dupla" : "Dupla adversária"} (1+3): <b>${latest.teamScores[0]}</b> / ${latest.targetScore}</span>
-    <span>${myTeam === 1 ? "Sua dupla" : "Dupla adversária"} (2+4): <b>${latest.teamScores[1]}</b> / ${latest.targetScore}</span>
+    <span>${teamLabel(0, myTeam)}: <b>${latest.teamScores[0]}</b> / ${latest.targetScore}</span>
+    <span>${teamLabel(1, myTeam)}: <b>${latest.teamScores[1]}</b> / ${latest.targetScore}</span>
   `;
 }

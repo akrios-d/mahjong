@@ -16,7 +16,12 @@ html, body {
 .topbar h1 { font-size: 1.1rem; margin: 0; color: #d9a5f0; }
 .back { color: #cfe; text-decoration: none; opacity: 0.8; }
 .back:hover { opacity: 1; }
-.phase { margin-left: auto; opacity: 0.85; font-size: 0.9rem; }
+.lang-bar { margin-left: auto; }
+.lang-bar .lang-switcher {
+  background: rgba(255,255,255,0.08); color: #f2f2f2; border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px; padding: 5px 10px; font-size: 0.8rem;
+}
+.phase { opacity: 0.85; font-size: 0.9rem; }
 .tag {
   font-size: 0.6rem;
   vertical-align: middle;
@@ -125,6 +130,17 @@ html, body {
   margin: 0 auto;
 }
 .morto { font-size: 0.75rem; opacity: 0.6; }
+.hand-end-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.hand-end-panel.hidden { display: none; }
+.starter-pick { text-align: center; background: rgba(0,0,0,0.3); border: 1px solid #6b3f8f; border-radius: 10px; padding: 10px 16px; }
+.starter-pick.hidden { display: none; }
+.starter-pick-buttons { display: flex; gap: 8px; justify-content: center; margin-top: 6px; }
+.starter-pick-buttons button {
+  background: #4a2c63; color: #fff; border: 1px solid #6b3f8f;
+  border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 0.85rem;
+}
+.starter-pick-buttons button.picked { outline: 2px solid #d9a5f0; }
+.starter-pick-status { font-size: 0.75rem; opacity: 0.75; margin: 6px 0 0; }
 .message { min-height: 1.3em; color: #f0c0ff; font-size: 0.9rem; text-align: center; }
 .last-batida { font-size: 0.8rem; color: #6fd6ff; min-height: 1.2em; text-align: center; }
 

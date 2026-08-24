@@ -6,7 +6,7 @@
   const RU = typeof module !== "undefined" && module.exports ? require("./roomUtils.js") : root.RoomUtils;
 
   function update(room) { room.hooks.update(); }
-  function log(room, text) { RU.pushLog(room, text); }
+  function log(room, key, params) { RU.pushLog(room, key, params); }
 
   function viewFor(room, seatIdx) {
     const base = RU.viewBase(room, seatIdx);
@@ -24,12 +24,13 @@
       targetScore: s.targetScore,
       lastBatida: s.lastBatida || null,
       passStreak: s.passStreak,
+      pendingHandEnd: s.pendingHandEnd || null,
     };
   }
 
-  function deal(room, keepScores) {
+  function deal(room, keepScores, forcedStarter) {
     const { hands, morto } = DR.dealDomino();
-    const { seat } = DR.findStarter(hands);
+    const seat = typeof forcedStarter === "number" ? forcedStarter : DR.findStarter(hands).seat;
     const teamScores = keepScores || [0, 0];
     room.state = {
       phase: "playing",
@@ -40,9 +41,11 @@
       teamScores,
       targetScore: 6,
       lastBatida: null,
+      pendingHandEnd: null,
       log: room.state ? room.state.log : [],
     };
-    log(room, `Nova mão. ${room.seats[seat].name || "Jogador " + seat} abre com a maior carroça.`);
+    if (typeof forcedStarter === "number") log(room, "domino.log.newHandChosen", { name: room.seats[seat].name || `Jogador ${seat}` });
+    else log(room, "domino.log.newHand", { name: room.seats[seat].name || `Jogador ${seat}` });
     update(room);
     maybeAI(room);
   }
@@ -69,20 +72,21 @@
     const s = room.state;
     const hand = s.hands[idx];
     const tileIdx = hand.findIndex((t) => t.id === tileId);
-    if (tileIdx === -1) return { ok: false, error: "Peça não encontrada." };
+    if (tileIdx === -1) return { ok: false, error: "domino.err.tileNotFound" };
     const tile = hand[tileIdx];
     const sides = DR.legalSides(tile, s.board);
-    if (!sides.includes(side)) return { ok: false, error: "Lado inválido para essa peça." };
+    if (!sides.includes(side)) return { ok: false, error: "domino.err.invalidSide" };
     const endsBefore = { left: s.board.leftEnd, right: s.board.rightEnd };
     DR.applyMove(s.board, tile, side);
     s.board._lastPlayed = tile;
     hand.splice(tileIdx, 1);
     s.passStreak = 0;
-    log(room, `${room.seats[idx].name || "Jogador " + idx} jogou ${tile.a}-${tile.b} (${side === "left" ? "esquerda" : "direita"}).`);
+    const name = room.seats[idx].name || `Jogador ${idx}`;
+    log(room, "domino.log.played", { name, a: tile.a, b: tile.b, side });
 
     if (hand.length === 0) {
       const result = DR.scoreBatida(s.board, idx, endsBefore);
-      finishHand(room, result, `${room.seats[idx].name || "Jogador " + idx} bateu!`);
+      finishHand(room, result, "domino.log.batidaHeadline", { name }, idx);
       return { ok: true };
     }
     s.turnIdx = (idx + 1) % 4;
@@ -94,10 +98,10 @@
   function applyPass(room, idx) {
     const s = room.state;
     s.passStreak++;
-    log(room, `${room.seats[idx].name || "Jogador " + idx} passou.`);
+    log(room, "domino.log.passed", { name: room.seats[idx].name || `Jogador ${idx}` });
     if (s.passStreak >= 4) {
       const result = DR.scoreBlocked(s.board, s.hands);
-      finishHand(room, result, "Jogo trancado — ninguém consegue jogar.");
+      finishHand(room, result, "domino.log.blockedHeadline", null, null);
       return;
     }
     s.turnIdx = (idx + 1) % 4;
@@ -105,50 +109,107 @@
     maybeAI(room);
   }
 
-  function finishHand(room, result, headline) {
+  function teammateSeats(team) {
+    const seats = [];
+    for (let i = 0; i < 4; i++) if (DR.teamOf(i) === team) seats.push(i);
+    return seats;
+  }
+
+  function finishHand(room, result, headlineKey, headlineParams, winnerSeat) {
     const s = room.state;
-    const label = DR.BATIDA_LABELS[result.type] || result.type;
+    log(room, headlineKey, headlineParams);
     if (result.winningTeam === -1) {
-      log(room, `${headline} Empate de pontos — mão redistribuída sem pontuar.`);
+      log(room, "domino.log.tieRedeal");
+      s.phase = "handEnd";
+      s.pendingHandEnd = { tie: true };
       update(room);
-      setTimeout(() => deal(room, s.teamScores), 1500);
       return;
     }
     s.teamScores[result.winningTeam] += result.points;
-    s.lastBatida = { ...result, label };
-    log(room, `${headline} ${label} — Dupla ${result.winningTeam === 0 ? "0/2" : "1/3"} marca ${result.points} ponto(s). Placar: ${s.teamScores[0]} x ${s.teamScores[1]}.`);
+    s.lastBatida = { type: result.type, points: result.points, winningTeam: result.winningTeam };
+    log(room, "domino.log.teamScored", { team: result.winningTeam, batidaType: result.type, points: result.points, scoreA: s.teamScores[0], scoreB: s.teamScores[1] });
     if (s.teamScores[result.winningTeam] >= s.targetScore) {
       s.phase = "matchEnd";
-      log(room, `Dupla ${result.winningTeam === 0 ? "0/2" : "1/3"} venceu a partida!`);
+      log(room, "domino.log.matchWon", { team: result.winningTeam });
       update(room);
       return;
     }
     s.phase = "handEnd";
+    if (typeof winnerSeat === "number") {
+      s.pendingHandEnd = { nextStarterSeat: winnerSeat };
+    } else {
+      s.pendingHandEnd = { needsTeamPick: true, winningTeam: result.winningTeam, teammates: teammateSeats(result.winningTeam), picks: {}, agreedStarter: null };
+      scheduleAIStarterPicks(room);
+    }
     update(room);
-    setTimeout(() => deal(room, s.teamScores), 2200);
+  }
+
+  // AI always proposes the lower-numbered teammate seat — deterministic, so
+  // two AI teammates auto-agree; a human teammate can still match it (or the
+  // AI's fixed proposal effectively lets the human decide by picking the same).
+  function scheduleAIStarterPicks(room) {
+    const pendingRef = room.state.pendingHandEnd;
+    pendingRef.teammates.forEach((seatIdx) => {
+      if (!room.seats[seatIdx] || !room.seats[seatIdx].isAI) return;
+      setTimeout(() => {
+        const s = room.state;
+        if (!s || s.pendingHandEnd !== pendingRef) return;
+        submitPickStarter(room, seatIdx, pendingRef.teammates[0]);
+      }, 600 + Math.random() * 400);
+    });
   }
 
   /* ---- validated entry points ---- */
   function submitPlay(room, seatIdx, tileId, side) {
     const s = room.state;
-    if (s.phase !== "playing" || s.turnIdx !== seatIdx) return { ok: false, error: "Não é sua vez." };
+    if (s.phase !== "playing" || s.turnIdx !== seatIdx) return { ok: false, error: "common.err.notYourTurn" };
     return applyPlay(room, seatIdx, tileId, side);
   }
 
   function submitPass(room, seatIdx) {
     const s = room.state;
-    if (s.phase !== "playing" || s.turnIdx !== seatIdx) return { ok: false, error: "Não é sua vez." };
+    if (s.phase !== "playing" || s.turnIdx !== seatIdx) return { ok: false, error: "common.err.notYourTurn" };
     const hand = s.hands[seatIdx];
-    if (DR.hasAnyLegalMove(hand, s.board)) return { ok: false, error: "Você tem jogada legal disponível." };
+    if (DR.hasAnyLegalMove(hand, s.board)) return { ok: false, error: "domino.err.hasLegalMove" };
     applyPass(room, seatIdx);
     return { ok: true };
   }
 
-  function requestNewHand(room) {
-    if (room.state && room.state.phase === "matchEnd") deal(room);
+  function submitPickStarter(room, seatIdx, chosenSeat) {
+    const s = room.state;
+    if (!s || s.phase !== "handEnd" || !s.pendingHandEnd || !s.pendingHandEnd.needsTeamPick) {
+      return { ok: false, error: "domino.err.noPendingPick" };
+    }
+    const p = s.pendingHandEnd;
+    if (!p.teammates.includes(seatIdx)) return { ok: false, error: "domino.err.notOnWinningTeam" };
+    if (!p.teammates.includes(chosenSeat)) return { ok: false, error: "domino.err.invalidStarterChoice" };
+    p.picks[seatIdx] = chosenSeat;
+    const [a, b] = p.teammates;
+    if (Object.prototype.hasOwnProperty.call(p.picks, a) && Object.prototype.hasOwnProperty.call(p.picks, b) && p.picks[a] === p.picks[b]) {
+      p.agreedStarter = p.picks[a];
+    } else {
+      p.agreedStarter = null;
+    }
+    update(room);
+    return { ok: true };
   }
 
-  const api = { viewFor, deal, submitPlay, submitPass, requestNewHand };
+  function requestNewHand(room) {
+    const s = room.state;
+    if (!s) return;
+    if (s.phase === "matchEnd") { deal(room); return; }
+    if (s.phase !== "handEnd" || !s.pendingHandEnd) return;
+    const p = s.pendingHandEnd;
+    if (p.tie) { deal(room, s.teamScores); return; }
+    if (p.needsTeamPick) {
+      if (p.agreedStarter == null) return;
+      deal(room, s.teamScores, p.agreedStarter);
+      return;
+    }
+    deal(room, s.teamScores, p.nextStarterSeat);
+  }
+
+  const api = { viewFor, deal, submitPlay, submitPass, submitPickStarter, requestNewHand };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   if (typeof root !== "undefined") root.DominoEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);

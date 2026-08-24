@@ -290,24 +290,34 @@ function renderBoardChain(chain) {
 
   const gap = 4;
   const containerWidth = els.boardChain.parentElement.clientWidth || 300;
-  const cols = Math.max(2, Math.floor((containerWidth + gap) / (tileW + gap)));
+  const colWidth = tileW + gap;
+  const cols = Math.max(2, Math.floor((containerWidth + gap) / colWidth));
   const { items, levelCount } = layoutSnake(chain, cols);
 
+  // Every tile (normal or the rotated corner piece) is placed on the same
+  // column grid — col 0 is x=0, col N is x=N*colWidth — so alignment
+  // across rows stays exact. A vertical tile is narrower than a column,
+  // so it's centered within its slot rather than pinned to a raw edge.
+  let contentWidth = 0;
   items.forEach(({ tile, col, level, vertical }) => {
     const el = renderTile(tile, { static: true });
+    const colX = col * colWidth;
     if (vertical) {
       el.classList.add("vertical");
       el.style.width = tileH + "px";
       el.style.height = (2 * tileH + gap) + "px";
-      el.style.left = (col === cols - 1 ? containerWidth - tileH : 0) + "px";
+      el.style.left = (colX + (tileW - tileH) / 2) + "px";
+      contentWidth = Math.max(contentWidth, colX + tileW);
     } else {
       el.style.width = tileW + "px";
       el.style.height = tileH + "px";
-      el.style.left = col * (tileW + gap) + "px";
+      el.style.left = colX + "px";
+      contentWidth = Math.max(contentWidth, colX + tileW);
     }
     el.style.top = level * (tileH + gap) + "px";
     els.boardChain.appendChild(el);
   });
+  els.boardChain.style.width = contentWidth + "px";
   els.boardChain.style.height = (levelCount * (tileH + gap) - gap) + "px";
 }
 
@@ -416,7 +426,12 @@ function renderHandEndPanel() {
   if (!show) return;
   const p = latest.pendingHandEnd;
 
-  if (p.needsTeamPick && p.agreedStarter != null && p.teammates.includes(mySeat)) {
+  // Any connected client can trigger this once the winning team has
+  // agreed — not just one of that team's own players. If the winning
+  // team is entirely AI-controlled (e.g. you're on the losing side),
+  // nobody else would ever send it and the game would hang forever
+  // waiting for a human on the winning team who isn't there.
+  if (p.needsTeamPick && p.agreedStarter != null) {
     const key = p.teammates.join(",") + ":" + p.agreedStarter;
     if (autoAdvancedFor !== key) {
       autoAdvancedFor = key;

@@ -42,6 +42,7 @@ html, body {
 .seats-bar .seat-chip { padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); }
 .seats-bar .seat-chip.you { border-color: #e8c060; color: #e8c060; }
 .seats-bar .seat-chip.ai { opacity: 0.6; }
+.winners-line { text-align: center; font-size: 0.75rem; color: #e8c060; min-height: 1.1em; margin-top: 4px; }
 .start-btn { background: #e8c060; color: #1a1a1a; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
 .start-btn.hidden { display: none; }
 

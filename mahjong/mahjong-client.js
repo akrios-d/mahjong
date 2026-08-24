@@ -27,6 +27,7 @@ const els = {
   roomBar: document.getElementById("roomBar"),
   seatsBar: document.getElementById("seatsBar"),
   startBtn: document.getElementById("startBtn"),
+  winnersLine: document.getElementById("winnersLine"),
 
   table: document.getElementById("table"),
   phase: document.getElementById("phaseLabel"),
@@ -281,7 +282,8 @@ function render() {
   }
 
   const me = players[mySeat];
-  els.metaYou.textContent = me.missingSuit ? I18N.t("mahjong.missingSuitParen", { suit: suitLabelI18n(me.missingSuit) }) : "";
+  const mySuitText = me.missingSuit ? I18N.t("mahjong.missingSuitParen", { suit: suitLabelI18n(me.missingSuit) }) : "";
+  els.metaYou.textContent = [mySuitText, chipsLabel(mySeat)].filter(Boolean).join(" · ");
   els.revealedYou.innerHTML = "";
   (me.revealed || []).forEach((m) => els.revealedYou.appendChild(renderMeld(m)));
 
@@ -341,24 +343,46 @@ function render() {
     renderClaimPanel();
   }
 
+  renderWinnersLine();
+
   if (latest.phase === "roundEnd") {
     els.endOverlay.classList.remove("hidden");
-    if (latest.winnerSeat === null) {
+    const winners = latest.winners || [];
+    if (winners.length === 0) {
       els.endTitle.textContent = I18N.t("mahjong.roundEnd.noWinnerTitle");
       els.endStats.textContent = I18N.t("mahjong.roundEnd.noWinnerStats");
     } else {
-      const won = latest.winnerSeat === mySeat;
-      els.endTitle.textContent = won ? I18N.t("mahjong.roundEnd.youWonTitle") : I18N.t("mahjong.roundEnd.wonByTitle", { name: seatLabel(latest.winnerSeat) });
-      els.endStats.textContent = latest.winType === "zimo" ? I18N.t("mahjong.roundEnd.zimo") : I18N.t("mahjong.roundEnd.fromDiscard", { name: seatLabel(latest.winFromSeat) });
+      const iWon = winners.some((w) => w.seatIdx === mySeat);
+      els.endTitle.textContent = iWon ? I18N.t("mahjong.roundEnd.youWonTitle") : I18N.t("mahjong.roundEnd.wonByTitle", { name: seatLabel(winners[0].seatIdx) });
+      els.endStats.textContent = winners.map((w) => I18N.t("mahjong.roundEnd.winnerLine", { name: seatLabel(w.seatIdx), mult: w.mult, payout: w.payout })).join("  ·  ");
     }
   } else {
     els.endOverlay.classList.add("hidden");
   }
 }
 
+// Blood-battle hands can have several winners over time (each steps out
+// as they Hu, but play continues for the rest) — this keeps a running,
+// always-visible tally so it's clear who's already won this hand and
+// for how much, instead of that only surfacing once at the very end.
+function renderWinnersLine() {
+  const winners = latest.winners || [];
+  if (!els.winnersLine) return;
+  els.winnersLine.textContent = winners
+    .map((w) => I18N.t("mahjong.roundEnd.winnerLine", { name: seatLabel(w.seatIdx), mult: w.mult, payout: w.payout }))
+    .join("  ·  ");
+}
+
+function chipsLabel(seatIdx) {
+  if (!latest.chips) return "";
+  const isOut = latest.activeSeats && !latest.activeSeats[seatIdx];
+  return I18N.t(isOut ? "mahjong.chips.outLabel" : "mahjong.chips.label", { chips: latest.chips[seatIdx] });
+}
+
 function renderSide(pos, seatIdx, player) {
   els[`name${pos}`].textContent = seatLabel(seatIdx);
-  els[`meta${pos}`].textContent = player.missingSuit ? I18N.t("mahjong.missingSuitPlain", { suit: suitLabelI18n(player.missingSuit) }) : (player.hasChosenMissingSuit ? I18N.t("mahjong.chosenSuit") : "");
+  const suitText = player.missingSuit ? I18N.t("mahjong.missingSuitPlain", { suit: suitLabelI18n(player.missingSuit) }) : (player.hasChosenMissingSuit ? I18N.t("mahjong.chosenSuit") : "");
+  els[`meta${pos}`].textContent = [suitText, chipsLabel(seatIdx)].filter(Boolean).join(" · ");
   els[`revealed${pos}`].innerHTML = "";
   (player.revealed || []).forEach((m) => els[`revealed${pos}`].appendChild(renderMeld(m)));
   els[`hand${pos}`].innerHTML = Array.from({ length: player.handCount }, () => `<div class="card-back"></div>`).join("");

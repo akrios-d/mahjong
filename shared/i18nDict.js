@@ -244,6 +244,20 @@
     "landlord.turn.mustBeat": { "pt-BR": "Sua vez: bata a jogada atual ou passe.", en: "Your turn: beat the current play or pass.", zh: "轮到你了：压过当前的牌或过牌。", fr: "À vous : battez le coup actuel ou passez.", es: "Tu turno: supera la jugada actual o pasa." },
     "landlord.turn.leadAny": { "pt-BR": "Sua vez: jogue qualquer combinação.", en: "Your turn: play any combination.", zh: "轮到你了：出任意牌型。", fr: "À vous : jouez n'importe quelle combinaison.", es: "Tu turno: juega cualquier combinación." },
     "landlord.roundEnd.wonBy": { "pt-BR": "{name} venceu a mão!", en: "{name} won the hand!", zh: "{name} 赢得了本局！", fr: "{name} a remporté la manche !", es: "¡{name} ganó la mano!" },
+    "landlord.roundEnd.landlordWon": {
+      "pt-BR": "{name} zerou a mão — Landlord venceu!",
+      en: "{name} emptied their hand — Landlord won!",
+      zh: "{name} 出完了手牌——地主赢了！",
+      fr: "{name} a vidé sa main — le Landlord a gagné !",
+      es: "{name} vació su mano — ¡el Landlord ganó!",
+    },
+    "landlord.roundEnd.peasantsWon": {
+      "pt-BR": "{name} zerou a mão — Peasants venceram!",
+      en: "{name} emptied their hand — Peasants won!",
+      zh: "{name} 出完了手牌——农民赢了！",
+      fr: "{name} a vidé sa main — les Peasants ont gagné !",
+      es: "{name} vació su mano — ¡los Peasants ganaron!",
+    },
     "landlord.phase.bidding": { "pt-BR": "Rodada de lances", en: "Bidding round", zh: "叫分阶段", fr: "Tour d'enchères", es: "Ronda de pujas" },
 
     "landlord.combo.single": { "pt-BR": "Carta única", en: "Single", zh: "单张", fr: "Carte seule", es: "Carta única" },
@@ -433,7 +447,12 @@
     "mahjong.log.claimedKong": { "pt-BR": "{name} fez Kong com o descarte.", en: "{name} made a Kong off the discard.", zh: "{name} 用弃牌杠了。", fr: "{name} a fait un Kong avec la défausse.", es: "{name} hizo Kong con el descarte." },
     "mahjong.log.claimedPong": { "pt-BR": "{name} fez Pong com o descarte.", en: "{name} made a Pong off the discard.", zh: "{name} 用弃牌碰了。", fr: "{name} a fait un Pong avec la défausse.", es: "{name} hizo Pong con el descarte." },
     "mahjong.log.claimedChi": { "pt-BR": "{name} fez Chi com o descarte.", en: "{name} made a Chi off the discard.", zh: "{name} 用弃牌吃了。", fr: "{name} a fait un Chi avec la défausse.", es: "{name} hizo Chi con el descarte." },
-    "mahjong.log.hu": { "pt-BR": "{name} fechou a mão ({winType})! Hu!", en: "{name} won the hand ({winType})! Hu!", zh: "{name} 和牌了（{winType}）！胡！", fr: "{name} a terminé la main ({winType}) ! Hu !", es: "¡{name} cerró la mano ({winType})! ¡Hu!" },
+    "mahjong.log.hu": { "pt-BR": "{name} fechou a mão ({winType}, x{mult}) e ganhou {payout} pontos! Hu!", en: "{name} won the hand ({winType}, x{mult}) and earned {payout} points! Hu!", zh: "{name} 和牌了（{winType}，x{mult}），赢得 {payout} 分！胡！", fr: "{name} a terminé la main ({winType}, x{mult}) et a gagné {payout} points ! Hu !", es: "¡{name} cerró la mano ({winType}, x{mult}) y ganó {payout} puntos! ¡Hu!" },
+    "mahjong.log.kongPayment": { "pt-BR": "{name} fez Kong oculto e recebeu {amount} pontos dos outros jogadores.", en: "{name} made a concealed Kong and collected {amount} points from the others.", zh: "{name} 暗杠，向其他玩家收取了 {amount} 分。", fr: "{name} a fait un Kong caché et a reçu {amount} points des autres.", es: "{name} hizo un Kong oculto y recibió {amount} puntos de los demás." },
+    "mahjong.log.kongPaymentFrom": { "pt-BR": "{name} roubou o Kong de {from} e recebeu {amount} pontos.", en: "{name} robbed {from}'s tile for a Kong and collected {amount} points.", zh: "{name} 抢 {from} 的牌开杠，收取了 {amount} 分。", fr: "{name} a volé la tuile de {from} pour un Kong et a reçu {amount} points.", es: "{name} robó la ficha de {from} para un Kong y recibió {amount} puntos." },
+    "mahjong.chips.label": { "pt-BR": "{chips} pts", en: "{chips} pts", zh: "{chips} 分", fr: "{chips} pts", es: "{chips} pts" },
+    "mahjong.chips.outLabel": { "pt-BR": "{chips} pts (fechou)", en: "{chips} pts (out)", zh: "{chips} 分（已胡）", fr: "{chips} pts (sorti)", es: "{chips} pts (salió)" },
+    "mahjong.roundEnd.winnerLine": { "pt-BR": "{name}: x{mult} — {payout} pts", en: "{name}: x{mult} — {payout} pts", zh: "{name}：x{mult} — {payout} 分", fr: "{name} : x{mult} — {payout} pts", es: "{name}: x{mult} — {payout} pts" },
     "mahjong.log.wallEmpty": { "pt-BR": "O monte acabou sem ninguém fechar a mão.", en: "The wall ran out with nobody completing their hand.", zh: "牌墙已空，无人和牌。", fr: "Le mur s'est épuisé sans que personne ne termine sa main.", es: "El monte se acabó sin que nadie cerrara la mano." },
 
     /* ---------------- common additions 2 ---------------- */

@@ -282,13 +282,15 @@ function render() {
 
   if (latest.phase === "roundEnd") {
     els.newBtn.classList.remove("hidden");
+    const winnerIsLandlord = latest.winnerIdx !== null && latest.isLandlord[latest.winnerIdx];
     const won = latest.winnerIdx !== null && latest.isLandlord[latest.winnerIdx] === latest.isLandlord[mySeat];
-    setMessage(I18N.t("landlord.roundEnd.wonBy", { name: seatLabel(latest.winnerIdx) }) + " " + I18N.t(won ? "common.youWon" : "common.youLost"));
+    const teamKey = winnerIsLandlord ? "landlord.roundEnd.landlordWon" : "landlord.roundEnd.peasantsWon";
+    setMessage(I18N.t(teamKey, { name: seatLabel(latest.winnerIdx) }) + " " + I18N.t(won ? "common.youWon" : "common.youLost"));
   } else {
     els.newBtn.classList.add("hidden");
   }
 
-  if (latest.log && latest.log.length) {
+  if (latest.log && latest.log.length && latest.phase !== "roundEnd") {
     const lastLog = latest.log[latest.log.length - 1];
     if (latest.phase !== "playing" || !myTurn) setMessage(formatLogEntry(lastLog));
   }

@@ -51,9 +51,9 @@
             youResponded: Object.prototype.hasOwnProperty.call(s.pendingClaim.responses, seatIdx),
           }
         : null,
-      winnerSeat: s.winnerSeat,
-      winType: s.winType,
-      winFromSeat: s.winFromSeat,
+      chips: s.chips,
+      activeSeats: s.activeSeats,
+      winners: s.winners,
     };
   }
 
@@ -70,6 +70,7 @@
     }
     const prevDealerIdx = room.state && typeof room.state.dealerIdx === "number" ? room.state.dealerIdx : 0;
     const prevRoundNumber = room.state && typeof room.state.roundNumber === "number" ? room.state.roundNumber : 0;
+    const prevChips = room.state && room.state.chips ? room.state.chips : [100, 100, 100, 100];
     room.state = {
       phase: "missingSuit",
       players, wall, discardPile: [],
@@ -78,7 +79,9 @@
       turnIdx: prevDealerIdx,
       awaitingDiscard: null,
       pendingClaim: null,
-      winnerSeat: null, winType: null, winFromSeat: null,
+      chips: prevChips,
+      activeSeats: [true, true, true, true],
+      winners: [],
       log: room.state ? room.state.log : [],
     };
     log(room, "mahjong.log.dealt", { round: room.state.roundNumber });
@@ -146,6 +149,29 @@
     return worst;
   }
 
+  // Kong pays out immediately (unlike Pong, which only feeds into the
+  // final multiplier when that hand is later Hu'd). A concealed kong is
+  // "paid for" by everyone still in the hand (KONG_FEE each); a kong
+  // claimed off one specific player's discard is paid entirely by that
+  // player at 3x the fee — both moves the same total (3 * KONG_FEE).
+  const KONG_FEE = 2;
+  function applyKongPayment(room, kongSeatIdx, concealed, fromSeat) {
+    const s = room.state;
+    if (concealed) {
+      for (let i = 0; i < SEAT_COUNT; i++) {
+        if (i === kongSeatIdx || !s.activeSeats[i]) continue;
+        s.chips[i] -= KONG_FEE;
+        s.chips[kongSeatIdx] += KONG_FEE;
+      }
+      log(room, "mahjong.log.kongPayment", { name: s.players[kongSeatIdx].name, amount: KONG_FEE * 3 });
+    } else {
+      const amount = KONG_FEE * 3;
+      s.chips[fromSeat] -= amount;
+      s.chips[kongSeatIdx] += amount;
+      log(room, "mahjong.log.kongPaymentFrom", { name: s.players[kongSeatIdx].name, from: s.players[fromSeat].name, amount });
+    }
+  }
+
   function submitSelfKong(room, seatIdx) {
     const s = room.state;
     if (s.phase !== "playing" || s.awaitingDiscard !== seatIdx) return { ok: false, error: "common.err.notYourTurn" };
@@ -156,6 +182,7 @@
     player.hand = player.hand.filter((t) => !(t.suit === kong.suit && t.value === kong.value));
     player.revealed.push({ type: "kong", concealed: true, suit: kong.suit, value: kong.value, claimedFrom: null });
     log(room, "mahjong.log.selfKong", { name: player.name, value: kong.value, suit: kong.suit });
+    applyKongPayment(room, seatIdx, true, null);
     drawForSeat(room, seatIdx);
     return { ok: true };
   }
@@ -167,7 +194,7 @@
     if (!MR.isWinningHand(player.hand, revealedGroupCount(player), player.missingSuit)) {
       return { ok: false, error: "mahjong.err.notWinning" };
     }
-    endRoundWin(room, seatIdx, "zimo", null);
+    applyWin(room, seatIdx, "zimo", null);
     return { ok: true };
   }
 
@@ -194,16 +221,30 @@
     return { ok: true };
   }
 
+  // Loops to the next still-active (hasn't already won this hand) seat —
+  // once someone Hu's in a blood-battle hand they step out and the turn
+  // order simply skips over their seat for the rest of the hand.
+  function nextActiveSeat(room, fromSeat) {
+    const s = room.state;
+    let i = fromSeat;
+    for (let n = 0; n < SEAT_COUNT; n++) {
+      i = (i + 1) % SEAT_COUNT;
+      if (s.activeSeats[i]) return i;
+    }
+    return fromSeat; // shouldn't happen — hand ends before this can occur
+  }
+
   function computeClaimEligibility(room, fromSeat, tile) {
     const s = room.state;
     const eligible = [];
+    const chiSeat = nextActiveSeat(room, fromSeat);
     for (let i = 0; i < SEAT_COUNT; i++) {
-      if (i === fromSeat) continue;
+      if (i === fromSeat || !s.activeSeats[i]) continue;
       const player = s.players[i];
       const canHu = MR.isWinningHand([...player.hand, tile], revealedGroupCount(player), player.missingSuit);
       const canKong = s.wall.length > 0 && MR.hasKongFromHand(player.hand, tile);
       const canPong = MR.hasPong(player.hand, tile);
-      const canChi = i === (fromSeat + 1) % SEAT_COUNT ? MR.chiOptions(player.hand, tile) : [];
+      const canChi = i === chiSeat ? MR.chiOptions(player.hand, tile) : [];
       if (canHu || canKong || canPong || canChi.length) {
         eligible.push({ seatIdx: i, canHu, canKong, canPong, canChi });
       }
@@ -256,7 +297,7 @@
     const responded = Object.entries(pc.responses).map(([seatIdx, r]) => ({ seatIdx: Number(seatIdx), ...r }));
 
     const huClaim = responded.filter((r) => r.action === "hu").sort((a, b) => order(a.seatIdx) - order(b.seatIdx))[0];
-    if (huClaim) { s.pendingClaim = null; endRoundWin(room, huClaim.seatIdx, "discard", pc.fromSeat); return; }
+    if (huClaim) { s.pendingClaim = null; applyWin(room, huClaim.seatIdx, "discard", pc.fromSeat); return; }
 
     const kongClaim = responded.filter((r) => r.action === "kong").sort((a, b) => order(a.seatIdx) - order(b.seatIdx))[0];
     const pongClaim = responded.filter((r) => r.action === "pong").sort((a, b) => order(a.seatIdx) - order(b.seatIdx))[0];
@@ -276,6 +317,7 @@
       claimant.hand = removeN(claimant.hand, pc.tile, 3);
       claimant.revealed.push({ type: "kong", concealed: false, suit: pc.tile.suit, value: pc.tile.value, claimedFrom: pc.fromSeat });
       log(room, "mahjong.log.claimedKong", { name: claimant.name });
+      applyKongPayment(room, winning.seatIdx, false, pc.fromSeat);
       s.pendingClaim = null;
       s.turnIdx = winning.seatIdx;
       drawForSeat(room, winning.seatIdx);
@@ -316,26 +358,53 @@
   }
 
   function advanceTurn(room, fromSeat) {
-    const next = (fromSeat + 1) % SEAT_COUNT;
+    const next = nextActiveSeat(room, fromSeat);
     room.state.turnIdx = next;
     drawForSeat(room, next);
   }
 
-  function endRoundWin(room, seatIdx, winType, fromSeat) {
+  const BASE_HU = 1;
+
+  // Blood-battle-to-the-end: a Hu doesn't stop the hand for everyone — the
+  // winner settles up and steps out, and the remaining active players keep
+  // playing until only one is left (nobody to trade tiles with) or the
+  // wall runs dry. Self-draw (zimo) is paid by every other active player;
+  // winning off a discard (dianpao) is paid entirely by the discarder, at
+  // 3x, so either way the winner's total take is comparable.
+  function applyWin(room, seatIdx, winType, fromSeat) {
     const s = room.state;
-    s.phase = "roundEnd";
-    s.winnerSeat = seatIdx;
-    s.winType = winType;
-    s.winFromSeat = fromSeat;
-    log(room, "mahjong.log.hu", { name: s.players[seatIdx].name, winType });
-    update(room);
+    const player = s.players[seatIdx];
+    const { mult, notes } = MR.estimateMultiplier(player.hand, player.revealed, player.missingSuit);
+    const payout = BASE_HU * mult;
+    let received = 0;
+    if (winType === "zimo") {
+      for (let i = 0; i < SEAT_COUNT; i++) {
+        if (i === seatIdx || !s.activeSeats[i]) continue;
+        s.chips[i] -= payout;
+        received += payout;
+      }
+    } else {
+      received = payout * 3;
+      s.chips[fromSeat] -= received;
+    }
+    s.chips[seatIdx] += received;
+    s.activeSeats[seatIdx] = false;
+    s.winners.push({ seatIdx, name: player.name, winType, fromSeat, mult, notes, payout: received });
+    log(room, "mahjong.log.hu", { name: player.name, winType, mult, payout: received });
+
+    const stillActive = s.activeSeats.filter(Boolean).length;
+    if (stillActive <= 1) {
+      s.phase = "roundEnd";
+      update(room);
+      return;
+    }
+    // The winner is done for this hand — move on to whoever plays next.
+    advanceTurn(room, winType === "zimo" ? seatIdx : fromSeat);
   }
 
   function endRoundDraw(room) {
     const s = room.state;
     s.phase = "roundEnd";
-    s.winnerSeat = null;
-    s.winType = "wall-empty";
     log(room, "mahjong.log.wallEmpty");
     update(room);
   }

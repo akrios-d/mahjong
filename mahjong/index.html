@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" href="../icons/icon-192.png">
 <meta name="theme-color" content="#0f2027">
 <script src="../shared/pwa.js" defer></script>
+<script src="../shared/scrollHint.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -43,6 +44,7 @@
   <div id="roomBar" class="room-bar hidden">
     <div class="seats-bar" id="seatsBar"></div>
     <button id="startBtn" class="start-btn hidden" data-i18n="common.startWithAI">Começar com IA</button>
+    <div id="winnersLine" class="winners-line"></div>
   </div>
 
   <main id="table" class="table hidden">

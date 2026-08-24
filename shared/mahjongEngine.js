@@ -152,6 +152,7 @@
     const player = s.players[seatIdx];
     const kong = MR.hasConcealedKong(player.hand);
     if (!kong) return { ok: false, error: "Você não tem 4 peças iguais na mão." };
+    if (s.wall.length === 0) return { ok: false, error: "Não dá para declarar Kong: o monte está vazio, não há peça de reposição para comprar." };
     player.hand = player.hand.filter((t) => !(t.suit === kong.suit && t.value === kong.value));
     player.revealed.push({ type: "kong", concealed: true, suit: kong.suit, value: kong.value, claimedFrom: null });
     log(room, `${player.name} declarou Kong oculto (${kong.value} ${MR.SUIT_LABEL[kong.suit]}).`);
@@ -200,7 +201,7 @@
       if (i === fromSeat) continue;
       const player = s.players[i];
       const canHu = MR.isWinningHand([...player.hand, tile], revealedGroupCount(player), player.missingSuit);
-      const canKong = MR.hasKongFromHand(player.hand, tile);
+      const canKong = s.wall.length > 0 && MR.hasKongFromHand(player.hand, tile);
       const canPong = MR.hasPong(player.hand, tile);
       const canChi = i === (fromSeat + 1) % SEAT_COUNT ? MR.chiOptions(player.hand, tile) : [];
       if (canHu || canKong || canPong || canChi.length) {

@@ -9,7 +9,7 @@
   const RU = typeof module !== "undefined" && module.exports ? require("./roomUtils.js") : root.RoomUtils;
 
   function update(room) { room.hooks.update(); }
-  function log(room, text) { RU.pushLog(room, text); }
+  function log(room, key, params) { RU.pushLog(room, key, params); }
 
   function viewFor(room, seatIdx) {
     const base = RU.viewBase(room, seatIdx);
@@ -53,7 +53,7 @@
       biddingStep: 0, highestBid: 0, highestBidder: -1,
       winnerIdx: null, log: room.state ? room.state.log : [],
     };
-    log(room, "Nova mão distribuída. Rodada de lances iniciada.");
+    log(room, "landlord.log.dealt");
     advanceBidding(room);
   }
 
@@ -84,7 +84,8 @@
     const s = room.state;
     if (bid > s.highestBid) { s.highestBid = bid; s.highestBidder = idx; }
     s.biddingStep++;
-    log(room, bid === 0 ? `${s.players[idx].name} passou o lance.` : `${s.players[idx].name} deu lance ${bid}.`);
+    if (bid === 0) log(room, "landlord.log.bidPassed", { name: s.players[idx].name });
+    else log(room, "landlord.log.bidMade", { name: s.players[idx].name, bid });
     if (s.highestBid === 3) return finishBidding(room);
     advanceBidding(room);
   }
@@ -92,7 +93,7 @@
   function finishBidding(room) {
     const s = room.state;
     if (s.highestBidder === -1) {
-      log(room, "Ninguém deu lance. Redistribuindo...");
+      log(room, "landlord.log.noBids");
       update(room);
       setTimeout(() => deal(room), 1200);
       return;
@@ -103,7 +104,7 @@
     s.players[s.landlordIdx].hand.sort((a, b) => a.value - b.value);
     s.phase = "playing";
     s.turnIdx = s.landlordIdx;
-    log(room, `${s.players[s.landlordIdx].name} é o Landlord e recebeu as 3 cartas do monte.`);
+    log(room, "landlord.log.becameLandlord", { name: s.players[s.landlordIdx].name });
     update(room);
     maybeAI(room);
   }
@@ -130,11 +131,11 @@
     s.currentTrick = { combo, ownerIdx: idx };
     s.passStreak = 0;
     s.lastPlays[idx] = combo;
-    log(room, `${s.players[idx].name} jogou ${LR.comboLabel(combo)} (${combo.cards.map(LR.cardLabel).join(" ")}).`);
+    log(room, "landlord.log.played", { name: s.players[idx].name, comboType: combo.type, cards: combo.cards.map((c) => ({ rank: c.rank, suit: c.suit })) });
     if (s.players[idx].hand.length === 0) {
       s.phase = "roundEnd";
       s.winnerIdx = idx;
-      log(room, `${s.players[idx].name} venceu a mão!`);
+      log(room, "landlord.log.wonHand", { name: s.players[idx].name });
       update(room);
       return;
     }
@@ -147,7 +148,7 @@
     const s = room.state;
     s.passStreak++;
     s.lastPlays[idx] = null;
-    log(room, `${s.players[idx].name} passou.`);
+    log(room, "landlord.log.passed", { name: s.players[idx].name });
     if (s.passStreak >= 2) { s.currentTrick = null; s.passStreak = 0; }
     s.turnIdx = (idx + 1) % 3;
     update(room);

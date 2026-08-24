@@ -213,10 +213,76 @@ const GROUP_LABELS = {
   partial_run: "Sequência parcial (falta 1)",
 };
 
+// Per-tile inspector: given the current hand, what does THIS specific tile
+// (by uid) already contribute, and which tile(s) would complete/extend it?
+// Used by the "tap a tile to inspect" UI so a player can check a tile's
+// potential before deciding to discard it.
+function tileGuidance(hand, missingSuit, uid) {
+  const tile = hand.find((t) => t.uid === uid);
+  if (!tile) return null;
+  const analysis = analyzeHand(hand, missingSuit);
+  const group = analysis.groups.find((g) => g.tiles.some((t) => t.uid === uid));
+
+  if (group && group.type === "triplet") {
+    return { tile, status: "triplet", waits: [], text: `Já forma uma trinca (${group.tiles.map((t) => t.value).join("-")} ${SUIT_LABEL[tile.suit]}). Já conta como um dos 4 grupos — pode ainda virar Kong se comprar/reagir à 4ª igual.` };
+  }
+  if (group && group.type === "run") {
+    return { tile, status: "run", waits: [], text: `Já faz parte de uma sequência completa (${group.tiles.map((t) => t.value).join("-")} ${SUIT_LABEL[tile.suit]}). Já conta como um dos 4 grupos.` };
+  }
+  if (group && group.type === "pair") {
+    return { tile, status: "pair", waits: [], text: `Já forma o par da mão (${tile.value} ${SUIT_LABEL[tile.suit]}). Você só precisa de 1 par no total — não precisa de mais peças iguais a essa.` };
+  }
+  if (group && group.type === "partial_run") {
+    const vals = group.tiles.map((t) => t.value).sort((a, b) => a - b);
+    const waits = [];
+    if (vals[1] - vals[0] === 1) {
+      if (vals[0] > 1) waits.push(vals[0] - 1);
+      if (vals[1] < 9) waits.push(vals[1] + 1);
+    } else if (vals[1] - vals[0] === 2) {
+      waits.push(vals[0] + 1);
+    }
+    return { tile, status: "partial_run", waits, text: `Sequência parcial (${vals.join("-")} ${SUIT_LABEL[tile.suit]}). Falta comprar/reagir a: ${waits.map((v) => `${v} ${SUIT_LABEL[tile.suit]}`).join(" ou ")}.` };
+  }
+  // Isolated: no group yet — list what would turn it into one.
+  const waits = [];
+  waits.push(tile.value); // pair
+  const runWaits = [];
+  if (tile.value - 2 >= 1) runWaits.push(tile.value - 2);
+  if (tile.value - 1 >= 1) runWaits.push(tile.value - 1);
+  if (tile.value + 1 <= 9) runWaits.push(tile.value + 1);
+  if (tile.value + 2 <= 9) runWaits.push(tile.value + 2);
+  return {
+    tile, status: "isolated", waits: [...waits, ...runWaits],
+    text: `Peça isolada, ainda sem grupo. Vira Par se comprar/reagir a outra ${tile.value} ${SUIT_LABEL[tile.suit]}, ou entra numa sequência com peças próximas (${runWaits.join(", ")} ${SUIT_LABEL[tile.suit]}).`,
+  };
+}
+
+// Rough scoring-multiplier estimate for the current hand shape (Sichuan
+// mahjong style: 门清/碰碰胡/清一色/kong stack multiplicatively). This is an
+// ESTIMATE based on the greedy hand analysis, not a guarantee of the final
+// score — the engine itself only awards the win, it doesn't yet score fan.
+function estimateMultiplier(hand, revealed, missingSuit) {
+  const analysis = analyzeHand(hand, missingSuit);
+  const notes = [];
+  let mult = 1;
+  const hasChi = (revealed || []).some((m) => m.type === "chi");
+  const hasRunShape = analysis.groups.some((g) => g.type === "run" || g.type === "partial_run");
+  if (!hasChi && !hasRunShape) { mult *= 2; notes.push("Pong Pong Hu (só trincas) ×2"); }
+  const suitsUsed = new Set();
+  hand.forEach((t) => suitsUsed.add(t.suit));
+  (revealed || []).forEach((m) => suitsUsed.add(m.suit));
+  if (suitsUsed.size === 1) { mult *= 2; notes.push("Um naipe só (清一色) ×2"); }
+  if (!revealed || revealed.length === 0) { mult *= 2; notes.push("Mão fechada (门清) ×2"); }
+  const kongCount = (revealed || []).filter((m) => m.type === "kong").length;
+  for (let i = 0; i < kongCount; i++) { mult *= 2; notes.push("Kong ×2"); }
+  return { mult, notes };
+}
+
 const api = {
   SUITS, SUIT_GLYPH, SUIT_LABEL, buildDeck, shuffle, tileGlyph, tileLabel, sameTile,
   sortHand, countsBySuit, canDecomposeSuit, isWinningHand, hasPong, hasKongFromHand,
   hasConcealedKong, chiOptions, suitCounts, suggestMissingSuit, analyzeHand, GROUP_LABELS,
+  tileGuidance, estimateMultiplier,
 };
 if (typeof module !== "undefined" && module.exports) module.exports = api;
 if (typeof window !== "undefined") window.MahjongRules = api;

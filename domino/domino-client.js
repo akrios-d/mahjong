@@ -3,6 +3,7 @@
 const DR = window.DominoRules;
 const RU = window.RoomUtils;
 const DE = window.DominoEngine;
+const I18N = window.I18N;
 
 let ws = null;
 let mode = null; // "online" | "local"
@@ -264,7 +265,10 @@ function render() {
   if (latest.phase === "playing") {
     setMessage(myTurn ? "Sua vez: escolha uma peça e o lado." : `Vez de ${seatLabel(latest.turnIdx)}`);
   } else if (latest.phase === "handEnd" || latest.phase === "matchEnd") {
-    if (latest.log && latest.log.length) setMessage(latest.log[latest.log.length - 1]);
+    if (latest.log && latest.log.length) {
+      const entry = latest.log[latest.log.length - 1];
+      setMessage(I18N.t(entry.key, entry.params));
+    }
   }
 
   els.newHandBtn.classList.toggle("hidden", latest.phase !== "matchEnd");

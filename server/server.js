@@ -72,7 +72,7 @@ function handleJoin(ws, msg) {
   ws.seatIdx = seatIdx;
   send(ws, { type: "joined", game, room: code, seatIdx, seatsTotal: room.seats.length });
   room.state = room.state || { log: [] };
-  RU.pushLog(room, `${room.seats[seatIdx].name} entrou na sala (assento ${seatIdx + 1}).`);
+  RU.pushLog(room, "common.log.joined", { name: room.seats[seatIdx].name, seat: seatIdx + 1 });
   broadcastState(room);
   if (game === "puzzle" && room.state.imageData) send(ws, { type: "image", dataUrl: room.state.imageData });
 }
@@ -88,12 +88,12 @@ function handleDisconnect(ws) {
   const noAiGames = new Set(["desenho", "puzzle"]);
   if (room.started && !noAiGames.has(room.game)) {
     seat.isAI = true; // AI takes over so the game keeps going (not supported in desenho/puzzle)
-    RU.pushLog(room, `${name} desconectou — a IA assumiu o assento.`);
+    RU.pushLog(room, "common.log.disconnectedAiTookOver", { name });
   } else if (room.started) {
-    RU.pushLog(room, `${name} desconectou.`);
+    RU.pushLog(room, "common.log.disconnected", { name });
   } else {
     room.seats[ws.seatIdx] = { ws: null, name: null, isAI: false };
-    RU.pushLog(room, `${name} saiu da sala.`);
+    RU.pushLog(room, "common.log.left", { name });
   }
   broadcastState(room);
 }

@@ -137,6 +137,21 @@ els.missingSuitPanel.querySelectorAll("button").forEach((b) => {
 
 let handHint = null; // { groupUids: Map(uid->label), discardUid, expiresAt }
 let handHintTimer = null;
+let tileInspectActive = false;
+let tileInspectTimer = null;
+
+function showTileInspector(uid) {
+  if (!latest || mySeat < 0) return;
+  const me = latest.players[mySeat];
+  const guidance = MR.tileGuidance(me.hand, me.missingSuit, uid);
+  if (!guidance) return;
+  const { mult, notes } = MR.estimateMultiplier(me.hand, me.revealed, me.missingSuit);
+  const multText = notes.length ? `Multiplicador estimado se fechar com essa cara: ×${mult} (${notes.join(", ")}).` : `Multiplicador estimado: ×${mult} (sem bônus especial ainda).`;
+  setMessage(`${guidance.text} ${multText}`);
+  tileInspectActive = true;
+  clearTimeout(tileInspectTimer);
+  tileInspectTimer = setTimeout(() => { tileInspectActive = false; render(); }, 7000);
+}
 
 els.hintBtn.addEventListener("click", () => {
   if (!latest || latest.awaitingDiscard !== mySeat) { setMessage("Só dá pra sugerir na sua vez de descartar."); return; }
@@ -220,6 +235,7 @@ function render() {
 
   els.handYou.innerHTML = "";
   const myTurnToDiscard = latest.phase === "playing" && latest.awaitingDiscard === mySeat;
+  const canInspect = latest.phase === "playing";
   for (const t of (me.hand || [])) {
     const el = renderTile(t, {
       disabled: !myTurnToDiscard,
@@ -235,6 +251,17 @@ function render() {
       if (t.uid === handHint.discardUid) { el.classList.add("discard-suggest"); el.title += " — sugestão de descarte"; }
       else if (handHint.groupUids.has(t.uid)) { el.classList.add("keep"); el.title += ` — ${handHint.groupUids.get(t.uid)}`; }
     }
+    if (canInspect) {
+      const badge = document.createElement("div");
+      badge.className = "inspect-badge";
+      badge.textContent = "?";
+      badge.title = "Ver combinações possíveis para essa peça";
+      badge.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        showTileInspector(t.uid);
+      });
+      el.appendChild(badge);
+    }
     els.handYou.appendChild(el);
   }
 
@@ -242,7 +269,7 @@ function render() {
   els.huBtn.classList.toggle("hidden", !(myTurnToDiscard && MR.isWinningHand(me.hand, (me.revealed || []).length, me.missingSuit)));
   els.newHandBtn.classList.toggle("hidden", latest.phase !== "roundEnd");
 
-  if (latest.phase === "playing" && !handHint) {
+  if (latest.phase === "playing" && !handHint && !tileInspectActive) {
     if (myTurnToDiscard) setMessage("Sua vez: escolha uma peça para descartar (ou Kong/Hu, se disponível).");
     else if (latest.pendingClaim) setMessage(`${seatLabel(latest.pendingClaim.fromSeat)} descartou ${MR.tileLabel(latest.pendingClaim.tile)}. Aguardando reações...`);
     else setMessage(`Vez de ${seatLabel(latest.turnIdx)}.`);

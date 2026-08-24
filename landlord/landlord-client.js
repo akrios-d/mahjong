@@ -3,6 +3,7 @@
 const LR = window.LandlordRules;
 const RU = window.RoomUtils;
 const LE = window.LandlordEngine;
+const I18N = window.I18N;
 
 let ws = null;
 let mode = null; // "online" | "local"
@@ -261,8 +262,17 @@ function render() {
 
   if (latest.log && latest.log.length) {
     const lastLog = latest.log[latest.log.length - 1];
-    if (latest.phase !== "playing" || !myTurn) setMessage(lastLog);
+    if (latest.phase !== "playing" || !myTurn) setMessage(formatLogEntry(lastLog));
   }
+}
+
+function formatLogEntry(entry) {
+  if (!entry || typeof entry !== "object") return entry || "";
+  if (entry.key === "landlord.log.played" && entry.params) {
+    const cards = (entry.params.cards || []).map((c) => LR.cardLabel(c) + (c.suit || "")).join(", ");
+    return I18N.t(entry.key, { ...entry.params, comboType: LR.comboLabel({ type: entry.params.comboType }), cards });
+  }
+  return I18N.t(entry.key, entry.params);
 }
 
 function renderLastPlay(target, combo) {

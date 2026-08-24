@@ -27,9 +27,12 @@ function fillWithAI(room) {
   });
 }
 
-function pushLog(room, text) {
+// Log entries are {key, params} — never a pre-built sentence — so each
+// viewer's client can render them in their own chosen language via
+// shared/i18n.js's t(key, params). `key` must exist in the i18n dictionary.
+function pushLog(room, key, params) {
   room.state.log = room.state.log || [];
-  room.state.log.push(text);
+  room.state.log.push({ key, params: params || null });
   if (room.state.log.length > 40) room.state.log.shift();
 }
 

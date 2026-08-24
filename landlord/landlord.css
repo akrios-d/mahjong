@@ -266,3 +266,24 @@ html, body {
   margin-top: 16px; background: #e8c060; color: #1a1a1a; border: none;
   border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer;
 }
+
+@media (max-width: 700px) {
+  .table {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: auto;
+    padding: 12px 10px 30px;
+    gap: 10px;
+  }
+  .opponent.left { order: 1; width: calc(50% - 5px); }
+  .opponent.right { order: 2; width: calc(50% - 5px); }
+  .center { order: 3; width: 100%; }
+  .you { order: 4; width: 100%; padding-top: 0; }
+  .hand-back .card-back { width: 22px; height: 32px; margin-left: -12px; }
+}
+@media (max-width: 420px) {
+  .card.selected, .card:hover { transform: translateY(-10px); }
+  .card { width: 42px; height: 62px; margin-left: -20px; }
+  .card .rank { font-size: 13px; }
+  .card .suit { font-size: 14px; }
+}

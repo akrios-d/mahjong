@@ -175,3 +175,23 @@ html, body {
 .controls button:hover { background: #5f3a80; }
 .controls button:disabled { opacity: 0.4; cursor: default; }
 .controls button.hidden { display: none; }
+
+@media (max-width: 700px) {
+  .table {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: auto;
+    padding: 12px 10px 30px;
+    gap: 10px;
+  }
+  .side.top { order: 1; width: 100%; }
+  .side.left { order: 2; width: calc(50% - 5px); }
+  .side.right { order: 3; width: calc(50% - 5px); }
+  .board-area { order: 4; width: 100%; min-height: auto; padding: 6px 0; }
+  .you { order: 5; width: 100%; }
+  .hand-back.vertical .card-back { width: 30px; height: 20px; }
+  .domino-tile .half { width: 24px; height: 36px; }
+}
+@media (max-width: 420px) {
+  .domino-tile .half { width: 20px; height: 30px; padding: 3px; }
+}

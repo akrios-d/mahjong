@@ -116,3 +116,23 @@ html, body {
 .overlay.hidden { display: none; }
 .overlay-box { background: #163a2e; border: 1px solid #35735a; border-radius: 14px; padding: 30px 36px; text-align: center; }
 .overlay-box button { margin-top: 16px; background: #e8c060; color: #1a1a1a; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+
+@media (max-width: 700px) {
+  .table {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: auto;
+    padding: 12px 10px 30px;
+    gap: 10px;
+  }
+  .side.top { order: 1; width: 100%; }
+  .side.left { order: 2; width: calc(50% - 5px); }
+  .side.right { order: 3; width: calc(50% - 5px); }
+  .board-area { order: 4; width: 100%; min-height: auto; padding: 6px 0; }
+  .you { order: 5; width: 100%; }
+  .hand-back.vertical .card-back { width: 26px; height: 18px; }
+  .mtile { width: 34px; height: 48px; font-size: 22px; }
+}
+@media (max-width: 420px) {
+  .mtile { width: 28px; height: 40px; font-size: 18px; }
+}

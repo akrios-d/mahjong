@@ -73,6 +73,7 @@
     const tile = hand[tileIdx];
     const sides = DR.legalSides(tile, s.board);
     if (!sides.includes(side)) return { ok: false, error: "Lado inválido para essa peça." };
+    const endsBefore = { left: s.board.leftEnd, right: s.board.rightEnd };
     DR.applyMove(s.board, tile, side);
     s.board._lastPlayed = tile;
     hand.splice(tileIdx, 1);
@@ -80,7 +81,7 @@
     log(room, `${room.seats[idx].name || "Jogador " + idx} jogou ${tile.a}-${tile.b} (${side === "left" ? "esquerda" : "direita"}).`);
 
     if (hand.length === 0) {
-      const result = DR.scoreBatida(s.board, idx);
+      const result = DR.scoreBatida(s.board, idx, endsBefore);
       finishHand(room, result, `${room.seats[idx].name || "Jogador " + idx} bateu!`);
       return { ok: true };
     }

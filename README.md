@@ -122,19 +122,20 @@ precisa de regras fixas para jogar):
   nenhuma (pode acontecer porque 4 peças ficam escondidas no morto), abre
   quem tiver a peça de maior soma de pontos.
 - Partida vai até **6 pontos**. Pontuação por tipo de batida:
-  - **Batida normal** — bate com peça comum: **1 ponto**
-  - **Carroça** — bate com peça dobrada: **2 pontos**
-  - **Lá-e-lô** — jogo tranca (ninguém consegue jogar) e as duas pontas
-    do tabuleiro ficam com o mesmo número: **3 pontos**
-  - **Cruzada** — bate com peça dobrada e essa jogada deixa as duas pontas
-    do tabuleiro com o mesmo número: **4 pontos**
-  - Quando o jogo tranca sem as pontas iguais, vence a dupla com menor
-    soma de pontos na mão (marca 1 ponto, "batida normal por pontos"); em
-    caso de empate de soma, a mão é redistribuída sem pontuar.
-
-Essas definições foram a interpretação padrão adotada para a implementação;
-se no seu grupo alguma dessas 4 batidas funciona diferente, é só pedir o
-ajuste.
+  - **Batida normal** — bate com peça comum, sem nenhum encaixe especial: **1 ponto**
+  - **Carroça** — bate com peça dobrada (e essa jogada não deixa as duas
+    pontas iguais): **2 pontos**
+  - **Lá-e-lô** — as duas pontas do tabuleiro têm números diferentes
+    (ex.: uma ponta 3, a outra 5) e você bate com a peça que encaixa
+    exatamente nas duas (a peça 3-5, nesse exemplo): **3 pontos**
+  - **Cruzada** — as duas pontas já estão com o mesmo número e você bate
+    com a carroça daquele número, fechando com as pontas continuando
+    iguais: **4 pontos**
+  - Quando o jogo tranca (ninguém consegue jogar), vence a dupla com menor
+    soma de pontos na mão e marca 1 ponto (batida normal "por pontos" —
+    nenhum dos bônus acima se aplica aqui, já que ninguém fechou com uma
+    peça específica); em caso de empate de soma, a mão é redistribuída
+    sem pontuar.
 
 ## Regras da Adedonha adotadas
 

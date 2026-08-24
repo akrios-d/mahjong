@@ -106,28 +106,44 @@ const TEAM_OF_SEAT = [0, 1, 0, 1]; // seats 0&2 = team 0, seats 1&3 = team 1
 
 function teamOf(seat) { return TEAM_OF_SEAT[seat]; }
 
-// Called right after a winning play (hand emptied). Returns {type, points, winningTeam}.
-function scoreBatida(board, winningSeat) {
+// Called right after a winning play (hand emptied). `endsBefore` is the
+// board's {left,right} ends *before* this play was applied — needed to
+// detect lá-e-lô, which is about the played tile matching both open ends,
+// not about anything left over after the play. Returns {type, points, winningTeam}.
+function scoreBatida(board, winningSeat, endsBefore) {
   const played = board._lastPlayed; // set by caller before calling
   const dbl = played ? isDouble(played) : false;
-  const endsEqual = board.leftEnd === board.rightEnd;
+  const endsEqualAfter = board.leftEnd === board.rightEnd;
   let type, points;
-  if (!dbl) { type = "batida"; points = 1; }
-  else if (endsEqual) { type = "cruzada"; points = 4; }
-  else { type = "carroca"; points = 2; }
+  if (dbl) {
+    // Only possible when the two ends were already equal before this play
+    // (a double always exposes the same value on both its sides, so the
+    // ends stay equal after too) — closing on a carroça that fits both.
+    type = endsEqualAfter ? "cruzada" : "carroca";
+    points = endsEqualAfter ? 4 : 2;
+  } else if (
+    played && endsBefore && endsBefore.left !== null && endsBefore.left !== endsBefore.right &&
+    ((played.a === endsBefore.left && played.b === endsBefore.right) ||
+      (played.a === endsBefore.right && played.b === endsBefore.left))
+  ) {
+    // The winning tile's two numbers match the two different open ends
+    // exactly ("lá" numa ponta, "e lô" na outra) — e.g. ends are 3 and 5
+    // and you close with the 3-5 tile.
+    type = "laelo"; points = 3;
+  } else {
+    type = "batida"; points = 1;
+  }
   return { type, points, winningTeam: teamOf(winningSeat) };
 }
 
-// Called when the board is blocked (nobody can play).
+// Called when the board is blocked (nobody can play) — decided by pip
+// count, so none of the tile-matching bonus types apply here.
 function scoreBlocked(board, hands) {
   const teamSum = [0, 0];
   for (let seat = 0; seat < 4; seat++) teamSum[teamOf(seat)] += pipSum(hands[seat]);
   if (teamSum[0] === teamSum[1]) return { type: "empate", points: 0, winningTeam: -1 };
   const winningTeam = teamSum[0] < teamSum[1] ? 0 : 1;
-  const endsEqual = board.leftEnd !== null && board.leftEnd === board.rightEnd;
-  return endsEqual
-    ? { type: "laelo", points: 3, winningTeam }
-    : { type: "batida", points: 1, winningTeam };
+  return { type: "batida", points: 1, winningTeam };
 }
 
 const BATIDA_LABELS = {

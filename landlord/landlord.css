@@ -132,11 +132,14 @@ html, body {
   text-align: center;
 }
 .opponent .name { font-weight: bold; margin-bottom: 4px; }
+.card-count { display: block; font-weight: normal; opacity: 0.7; font-size: 0.78rem; margin-bottom: 2px; }
 .role { font-size: 0.8rem; color: #e8c060; min-height: 1.1em; }
 .hand-back {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: -10px;
+  max-width: 100%;
 }
 .hand-back .card-back {
   width: 34px;
@@ -145,6 +148,7 @@ html, body {
   background: linear-gradient(160deg, #34506b, #1c2f42);
   border: 1px solid #567;
   border-radius: 5px;
+  flex-shrink: 0;
 }
 .hand-back .card-back:first-child { margin-left: 0; }
 .lastplay {
@@ -239,7 +243,8 @@ html, body {
 .card:hover { transform: translateY(-8px) rotateX(6deg); box-shadow: 2px 8px 10px rgba(0,0,0,0.45); }
 .card.selected {
   transform: translateY(-20px) rotateX(10deg);
-  box-shadow: 2px 14px 16px rgba(0,0,0,0.5);
+  outline: 3px solid #6fd6ff;
+  box-shadow: 2px 14px 16px rgba(0,0,0,0.5), 0 0 12px rgba(111,214,255,0.75);
 }
 .card .rank { font-size: 16px; }
 .card .suit { font-size: 18px; }
@@ -275,11 +280,12 @@ html, body {
     padding: 12px 10px 30px;
     gap: 10px;
   }
-  .opponent.left { order: 1; width: calc(50% - 5px); }
-  .opponent.right { order: 2; width: calc(50% - 5px); }
+  .opponent.left { order: 1; width: calc(50% - 5px); overflow: hidden; }
+  .opponent.right { order: 2; width: calc(50% - 5px); overflow: hidden; }
   .center { order: 3; width: 100%; }
   .you { order: 4; width: 100%; padding-top: 0; }
-  .hand-back .card-back { width: 22px; height: 32px; margin-left: -12px; }
+  .hand-back { gap: 3px; }
+  .hand-back .card-back { width: 18px; height: 26px; margin-left: 0 !important; }
 }
 @media (max-width: 420px) {
   .card.selected, .card:hover { transform: translateY(-10px); }

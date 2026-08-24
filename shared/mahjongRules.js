@@ -141,10 +141,82 @@ function suggestMissingSuit(hand) {
   return best;
 }
 
+// Greedy hand analysis used for the discard hint: groups tiles into
+// triplets / complete runs / a pair / partial runs (needing one more tile),
+// so the UI can highlight what you already have towards 4 groups + 1 pair
+// and suggest which loose tile is safest to let go. This is a heuristic,
+// not a full shanten search — it won't always find the mathematically
+// optimal discard, but it reflects the same priorities the rules doc
+// recommends: ditch the missing suit first, then keep pairs/triplets/runs.
+function analyzeHand(hand, missingSuit) {
+  const bySuitValue = new Map();
+  for (const t of hand) {
+    const k = `${t.suit}_${t.value}`;
+    if (!bySuitValue.has(k)) bySuitValue.set(k, []);
+    bySuitValue.get(k).push(t);
+  }
+  const used = new Set();
+  const groups = [];
+  const unusedAt = (suit, value) => (bySuitValue.get(`${suit}_${value}`) || []).find((t) => !used.has(t.uid));
+
+  // 1. Triplets (three-of-a-kind already formed)
+  for (const tiles of bySuitValue.values()) {
+    const free = tiles.filter((t) => !used.has(t.uid));
+    if (free.length >= 3) {
+      const chosen = free.slice(0, 3);
+      groups.push({ type: "triplet", tiles: chosen });
+      chosen.forEach((t) => used.add(t.uid));
+    }
+  }
+  // 2. Complete runs (three consecutive values, same suit)
+  for (const suit of SUITS) {
+    if (suit === missingSuit) continue;
+    for (let v = 1; v <= 7; v++) {
+      const a = unusedAt(suit, v), b = unusedAt(suit, v + 1), c = unusedAt(suit, v + 2);
+      if (a && b && c) { groups.push({ type: "run", tiles: [a, b, c] }); [a, b, c].forEach((t) => used.add(t.uid)); }
+    }
+  }
+  // 3. One pair (only one counts towards the winning shape)
+  for (const tiles of bySuitValue.values()) {
+    const free = tiles.filter((t) => !used.has(t.uid));
+    if (free.length >= 2 && !groups.some((g) => g.type === "pair")) {
+      const chosen = free.slice(0, 2);
+      groups.push({ type: "pair", tiles: chosen });
+      chosen.forEach((t) => used.add(t.uid));
+    }
+  }
+  // 4. Partial runs: two tiles one (edge/middle wait) or two apart (closed wait)
+  for (const suit of SUITS) {
+    if (suit === missingSuit) continue;
+    for (let v = 1; v <= 9; v++) {
+      const a = unusedAt(suit, v);
+      if (!a) continue;
+      const b1 = unusedAt(suit, v + 1);
+      if (b1) { groups.push({ type: "partial_run", tiles: [a, b1] }); used.add(a.uid); used.add(b1.uid); continue; }
+      const b2 = unusedAt(suit, v + 2);
+      if (b2) { groups.push({ type: "partial_run", tiles: [a, b2] }); used.add(a.uid); used.add(b2.uid); }
+    }
+  }
+
+  const isolated = hand.filter((t) => !used.has(t.uid));
+  let discardCandidates = isolated.filter((t) => t.suit === missingSuit);
+  if (discardCandidates.length === 0) discardCandidates = isolated;
+  if (discardCandidates.length === 0) {
+    const weakest = groups.find((g) => g.type === "partial_run") || groups.find((g) => g.type === "pair");
+    discardCandidates = weakest ? [weakest.tiles[weakest.tiles.length - 1]] : [hand[0]];
+  }
+  return { groups, isolated, discardSuggestion: discardCandidates[0] };
+}
+
+const GROUP_LABELS = {
+  triplet: "Trinca formada", run: "Sequência completa", pair: "Par",
+  partial_run: "Sequência parcial (falta 1)",
+};
+
 const api = {
   SUITS, SUIT_GLYPH, SUIT_LABEL, buildDeck, shuffle, tileGlyph, tileLabel, sameTile,
   sortHand, countsBySuit, canDecomposeSuit, isWinningHand, hasPong, hasKongFromHand,
-  hasConcealedKong, chiOptions, suitCounts, suggestMissingSuit,
+  hasConcealedKong, chiOptions, suitCounts, suggestMissingSuit, analyzeHand, GROUP_LABELS,
 };
 if (typeof module !== "undefined" && module.exports) module.exports = api;
 if (typeof window !== "undefined") window.MahjongRules = api;

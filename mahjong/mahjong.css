@@ -104,6 +104,27 @@ html, body {
 .mtile.disabled { cursor: default; }
 .mtile:not(.static):not(.disabled):hover { transform: translateY(-6px) rotateX(6deg); box-shadow: 2px 8px 10px rgba(0,0,0,0.45); }
 
+/* Persistent marker: tiles from the suit you're abandoning (Missing Suit) */
+.mtile.missing-suit { filter: saturate(0.35) brightness(0.8); position: relative; }
+.mtile.missing-suit::after {
+  content: "✕";
+  position: absolute; top: 2px; right: 4px;
+  font-size: 11px; color: #c0392b; font-weight: bold;
+}
+
+/* Hint overlay: tiles that already form a useful group */
+.mtile.keep { outline: 3px solid #4ec97d; box-shadow: 0 0 10px rgba(78,201,125,0.6); }
+/* Hint overlay: the suggested tile to discard */
+.mtile.discard-suggest {
+  outline: 3px solid #ff8a3d;
+  box-shadow: 0 0 12px rgba(255,138,61,0.75);
+  animation: mtile-pulse 1s ease-in-out infinite;
+}
+@keyframes mtile-pulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .controls button {
   background: #1f4235; color: #fff; border: 1px solid #35735a; border-radius: 8px;

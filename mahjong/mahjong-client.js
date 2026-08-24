@@ -135,30 +135,24 @@ els.missingSuitPanel.querySelectorAll("button").forEach((b) => {
   b.addEventListener("click", () => send({ type: "chooseMissingSuit", suit: b.dataset.suit }));
 });
 
+let handHint = null; // { groupUids: Map(uid->label), discardUid, expiresAt }
+let handHintTimer = null;
+
 els.hintBtn.addEventListener("click", () => {
   if (!latest || latest.awaitingDiscard !== mySeat) { setMessage("Só dá pra sugerir na sua vez de descartar."); return; }
   const me = latest.players[mySeat];
-  const tile = suggestDiscard(me.hand, me.missingSuit);
-  setMessage(`Sugestão: descarte ${MR.tileLabel(tile)}.`);
-  highlightTile(tile.uid);
+  const analysis = MR.analyzeHand(me.hand, me.missingSuit);
+  const groupUids = new Map();
+  analysis.groups.forEach((g) => g.tiles.forEach((t) => groupUids.set(t.uid, MR.GROUP_LABELS[g.type])));
+  handHint = { groupUids, discardUid: analysis.discardSuggestion.uid };
+  const groupSummary = analysis.groups.length
+    ? analysis.groups.map((g) => `${MR.GROUP_LABELS[g.type]} (${g.tiles.map((t) => MR.tileLabel(t)).join(", ")})`).join(" · ")
+    : "nenhum grupo formado ainda";
+  setMessage(`Sugestão: descarte ${MR.tileLabel(analysis.discardSuggestion)}. Você já tem: ${groupSummary}.`);
+  clearTimeout(handHintTimer);
+  handHintTimer = setTimeout(() => { handHint = null; render(); }, 6000);
+  render();
 });
-
-function suggestDiscard(hand, missingSuit) {
-  const inMissing = hand.filter((t) => t.suit === missingSuit);
-  if (inMissing.length) return inMissing[0];
-  let worst = hand[0], worstScore = Infinity;
-  for (const t of hand) {
-    const score = hand.filter((o) => o.uid !== t.uid && o.suit === t.suit && Math.abs(o.value - t.value) <= 2).length;
-    if (score < worstScore) { worstScore = score; worst = t; }
-  }
-  return worst;
-}
-
-function highlightTile(uid) {
-  document.querySelectorAll(".mtile[data-uid]").forEach((el) => {
-    el.style.outline = Number(el.dataset.uid) === uid ? "3px solid #6fd6ff" : "";
-  });
-}
 
 /* ---------------- rendering ---------------- */
 function seatLabel(i) {
@@ -229,8 +223,18 @@ function render() {
   for (const t of (me.hand || [])) {
     const el = renderTile(t, {
       disabled: !myTurnToDiscard,
-      onClick: () => { if (myTurnToDiscard) send({ type: "discard", uid: t.uid }); },
+      onClick: () => {
+        if (!myTurnToDiscard) return;
+        handHint = null;
+        clearTimeout(handHintTimer);
+        send({ type: "discard", uid: t.uid });
+      },
     });
+    if (me.missingSuit && t.suit === me.missingSuit) el.classList.add("missing-suit");
+    if (handHint) {
+      if (t.uid === handHint.discardUid) { el.classList.add("discard-suggest"); el.title += " — sugestão de descarte"; }
+      else if (handHint.groupUids.has(t.uid)) { el.classList.add("keep"); el.title += ` — ${handHint.groupUids.get(t.uid)}`; }
+    }
     els.handYou.appendChild(el);
   }
 
@@ -238,7 +242,7 @@ function render() {
   els.huBtn.classList.toggle("hidden", !(myTurnToDiscard && MR.isWinningHand(me.hand, (me.revealed || []).length, me.missingSuit)));
   els.newHandBtn.classList.toggle("hidden", latest.phase !== "roundEnd");
 
-  if (latest.phase === "playing") {
+  if (latest.phase === "playing" && !handHint) {
     if (myTurnToDiscard) setMessage("Sua vez: escolha uma peça para descartar (ou Kong/Hu, se disponível).");
     else if (latest.pendingClaim) setMessage(`${seatLabel(latest.pendingClaim.fromSeat)} descartou ${MR.tileLabel(latest.pendingClaim.tile)}. Aguardando reações...`);
     else setMessage(`Vez de ${seatLabel(latest.turnIdx)}.`);

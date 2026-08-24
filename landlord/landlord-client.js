@@ -34,6 +34,8 @@ const els = {
   lastB: document.getElementById("lastB"),
   nameA: document.getElementById("nameA"),
   nameB: document.getElementById("nameB"),
+  countA: document.getElementById("countA"),
+  countB: document.getElementById("countB"),
   kitty: document.getElementById("kitty"),
   bidBox: document.getElementById("bidBox"),
   bidPrompt: document.getElementById("bidPrompt"),
@@ -185,6 +187,8 @@ function render() {
 
   els.handA.innerHTML = Array.from({ length: latest.handCounts[leftIdx] }, () => `<div class="card-back"></div>`).join("");
   els.handB.innerHTML = Array.from({ length: latest.handCounts[rightIdx] }, () => `<div class="card-back"></div>`).join("");
+  els.countA.textContent = `(${latest.handCounts[leftIdx]} cartas)`;
+  els.countB.textContent = `(${latest.handCounts[rightIdx]} cartas)`;
 
   renderLastPlay(els.lastA, latest.lastPlays[leftIdx]);
   renderLastPlay(els.lastB, latest.lastPlays[rightIdx]);
@@ -235,7 +239,12 @@ function render() {
   }
 
   const myTurn = latest.phase === "playing" && latest.turnIdx === mySeat;
-  els.playBtn.disabled = !myTurn;
+  const selectedCards = latest.hand.filter((c) => selectedUids.has(c.uid));
+  const selectedCombo = selectedCards.length ? LR.analyzeCombo(selectedCards) : null;
+  const canPlaySelection = !!selectedCombo && (
+    !latest.currentTrick || latest.currentTrick.ownerIdx === mySeat || LR.compareCombo(selectedCombo, latest.currentTrick)
+  );
+  els.playBtn.disabled = !myTurn || !canPlaySelection;
   els.passBtn.disabled = !myTurn || !latest.currentTrick || latest.currentTrick.ownerIdx === mySeat;
 
   if (latest.phase === "playing") {

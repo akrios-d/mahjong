@@ -220,9 +220,15 @@ html, body {
 .you .name { font-weight: bold; }
 .hand {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 110px;
   perspective: 900px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 6px;
+  width: 100%;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 .card {
   width: 58px;

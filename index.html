@@ -16,6 +16,10 @@
     <div class="lang-bar" id="langBar"></div>
     <h1>雀韵 &nbsp;·&nbsp; 地主</h1>
     <p class="sub" data-i18n="landing.subtitle">Seis jogos, recriados do zero — online, com IA e instaláveis como app (PWA).</p>
+    <div class="player-name-bar">
+      <label for="playerNameInput" data-i18n="landing.playerName.label">Seu nome (usado em todos os jogos)</label>
+      <input id="playerNameInput" type="text" data-i18n-placeholder="common.lobby.playerNamePlaceholder" placeholder="Seu nome" maxlength="20">
+    </div>
     <div class="games">
       <a class="game-card" href="mahjong/index.html">
         <span class="glyph">🀄</span>
@@ -56,9 +60,13 @@
   </div>
   <script src="shared/i18n.js"></script>
   <script src="shared/i18nDict.js"></script>
+  <script src="shared/playerName.js"></script>
   <script>
     I18N.applyStaticI18n();
     I18N.injectLanguageSwitcher(document.getElementById("langBar"), () => I18N.applyStaticI18n());
+    const playerNameInput = document.getElementById("playerNameInput");
+    playerNameInput.value = PlayerName.get();
+    playerNameInput.addEventListener("input", () => PlayerName.set(playerNameInput.value));
   </script>
 </body>
 </html>

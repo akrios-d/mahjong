@@ -17,6 +17,13 @@
       es: "Seis juegos, recreados desde cero — en línea, con IA e instalables como app (PWA).",
     },
     "landing.badge.online": { "pt-BR": "online", en: "online", zh: "在线", fr: "en ligne", es: "en línea" },
+    "landing.playerName.label": {
+      "pt-BR": "Seu nome (usado em todos os jogos)",
+      en: "Your name (used in every game)",
+      zh: "你的名字（所有游戏通用）",
+      fr: "Votre nom (utilisé dans tous les jeux)",
+      es: "Tu nombre (usado en todos los juegos)",
+    },
     "landing.mahjong.desc": {
       "pt-BR": "O Mahjong de verdade (estilo Sichuan): 108 peças, 4 jogadores, escolha seu Missing Suit e feche com 4 grupos + 1 par. Pong, Kong, Chi e Hu.",
       en: "The real Mahjong (Sichuan style): 108 tiles, 4 players, pick your Missing Suit and win with 4 sets + 1 pair. Pong, Kong, Chi and Hu.",

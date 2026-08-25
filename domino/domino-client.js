@@ -224,64 +224,23 @@ function renderTile(tile, opts) {
   el.className = "domino-tile" + (opts.static ? " static" : "") + (tile.a === tile.b ? " double" : "");
   if (opts.selected) el.classList.add("selected");
   if (opts.disabled) el.classList.add("disabled");
+  el.appendChild(renderHalf(tile.a));
   const divider = document.createElement("div");
   divider.className = "divider";
-  // flip only changes which half renders on which side (for a
-  // right-to-left board row) — it never changes the pip values.
-  const first = opts.flip ? tile.b : tile.a;
-  const second = opts.flip ? tile.a : tile.b;
-  el.appendChild(renderHalf(first));
   el.appendChild(divider);
-  el.appendChild(renderHalf(second));
+  el.appendChild(renderHalf(tile.b));
   if (opts.onClick) el.addEventListener("click", opts.onClick);
   return el;
 }
 
-// Lays out the chain as a real boustrophedon snake: fills a row of
-// columns, then turns the corner with an actual chain tile rotated 90°
-// (like a real domino table running out of space) and continues in the
-// opposite direction on the next row. Returns {items, levelCount} where
-// each item is {tile, col, level, vertical}; col/level are grid units,
-// not pixels — renderBoardChain converts those to positions.
-function layoutSnake(chain, cols) {
-  const items = [];
-  let idx = 0;
-  let level = 0;
-  let incoming = null; // 'left' | 'right' | null — which column this level's incoming corner occupies
-  while (idx < chain.length) {
-    const remaining = chain.length - idx;
-    const reservedIncoming = incoming ? 1 : 0;
-    const needsOutgoing = remaining > cols - reservedIncoming;
-    const outgoing = needsOutgoing ? (incoming === "right" ? "left" : "right") : null;
-    const reservedLeft = incoming === "left" || outgoing === "left" ? 1 : 0;
-    const reservedRight = incoming === "right" || outgoing === "right" ? 1 : 0;
-    // On the final level (no outgoing corner), don't pad out to full
-    // capacity — there may be fewer tiles left than columns available.
-    const normalCount = outgoing ? cols - reservedLeft - reservedRight : remaining;
-    // Rows read screen-left-to-right (dir=+1) normally, but right-to-left
-    // (dir=-1) when they're continuing from a corner on the right edge —
-    // tiles must start adjacent to that corner and work back across the
-    // row, or the chain jumps across the row instead of flowing
-    // continuously. flip mirrors which half of the tile faces which way
-    // so matching pips still touch at each junction.
-    const dir = incoming === "right" ? -1 : 1;
-    const startColActual = dir === 1 ? reservedLeft : cols - 1 - reservedRight;
-    for (let k = 0; k < normalCount; k++) {
-      items.push({ tile: chain[idx], col: startColActual + k * dir, level, vertical: false, flip: dir === -1 });
-      idx++;
-    }
-    if (!outgoing) break;
-    const cornerCol = outgoing === "right" ? cols - 1 : 0;
-    items.push({ tile: chain[idx], col: cornerCol, level, vertical: true });
-    idx++;
-    incoming = outgoing;
-    level++;
-  }
-  return { items, levelCount: level + 1 };
-}
-
+// Simple, unambiguous layout: wrap the chain into left-to-right rows,
+// same reading direction every row, tiles kept in their natural order
+// so matching pips always read left-to-right without any mirroring or
+// rotation to follow. Less "physically real" than an actual snake, but
+// far easier to read at a glance.
 function renderBoardChain(chain) {
   els.boardChain.innerHTML = "";
+  els.boardChain.style.width = "";
   els.boardChain.style.height = "";
   if (chain.length === 0) {
     const hintEl = document.createElement("span");
@@ -301,35 +260,24 @@ function renderBoardChain(chain) {
 
   const gap = 4;
   const containerWidth = els.boardChain.parentElement.clientWidth || 300;
-  const colWidth = tileW + gap;
-  const cols = Math.max(2, Math.floor((containerWidth + gap) / colWidth));
-  const { items, levelCount } = layoutSnake(chain, cols);
+  const perRow = Math.max(1, Math.floor((containerWidth + gap) / (tileW + gap)));
+  const rowCount = Math.ceil(chain.length / perRow);
 
-  // Every tile (normal or the rotated corner piece) is placed on the same
-  // column grid — col 0 is x=0, col N is x=N*colWidth — so alignment
-  // across rows stays exact. A vertical tile is narrower than a column,
-  // so it's centered within its slot rather than pinned to a raw edge.
-  let contentWidth = 0;
-  items.forEach(({ tile, col, level, vertical, flip }) => {
-    const el = renderTile(tile, { static: true, flip });
-    const colX = col * colWidth;
-    if (vertical) {
-      el.classList.add("vertical");
-      el.style.width = tileH + "px";
-      el.style.height = (2 * tileH + gap) + "px";
-      el.style.left = (colX + (tileW - tileH) / 2) + "px";
-      contentWidth = Math.max(contentWidth, colX + tileW);
-    } else {
-      el.style.width = tileW + "px";
-      el.style.height = tileH + "px";
-      el.style.left = colX + "px";
-      contentWidth = Math.max(contentWidth, colX + tileW);
-    }
-    el.style.top = level * (tileH + gap) + "px";
+  chain.forEach((tile, i) => {
+    const row = Math.floor(i / perRow);
+    const col = i % perRow;
+    const el = renderTile(tile, { static: true });
+    el.style.width = tileW + "px";
+    el.style.height = tileH + "px";
+    el.style.left = col * (tileW + gap) + "px";
+    el.style.top = row * (tileH + gap) + "px";
     els.boardChain.appendChild(el);
   });
-  els.boardChain.style.width = contentWidth + "px";
-  els.boardChain.style.height = (levelCount * (tileH + gap) - gap) + "px";
+
+  const lastRowCount = chain.length - (rowCount - 1) * perRow;
+  const widestRow = rowCount === 1 ? lastRowCount : perRow;
+  els.boardChain.style.width = (widestRow * (tileW + gap) - gap) + "px";
+  els.boardChain.style.height = (rowCount * (tileH + gap) - gap) + "px";
 }
 
 /* ---------------- rendering ---------------- */

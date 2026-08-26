@@ -169,6 +169,7 @@ function comboLabelI18n(combo) { return I18N.t("landlord.combo." + combo.type); 
 
 els.hintBtn.addEventListener("click", () => {
   if (!latest || !latest.started || mySeat < 0) return;
+  if (latest.phase !== "playing" || latest.turnIdx !== mySeat) return;
   const hand = latest.hand;
   let combo;
   if (!latest.currentTrick || latest.currentTrick.ownerIdx === mySeat) {
@@ -275,6 +276,7 @@ function render() {
   );
   els.playBtn.disabled = !myTurn || !canPlaySelection;
   els.passBtn.disabled = !myTurn || !latest.currentTrick || latest.currentTrick.ownerIdx === mySeat;
+  els.hintBtn.disabled = !myTurn;
 
   if (latest.phase === "playing") {
     setMessage(myTurn ? I18N.t(latest.currentTrick ? "landlord.turn.mustBeat" : "landlord.turn.leadAny") : I18N.t("common.turnOf", { name: seatLabel(latest.turnIdx) }));
